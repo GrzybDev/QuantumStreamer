@@ -1,0 +1,222 @@
+.code
+extern ImportedFunctions:QWORD
+BinkAllocateFrameBuffers PROC
+	jmp ImportedFunctions[0*8]
+BinkAllocateFrameBuffers ENDP
+BinkClose PROC
+	jmp ImportedFunctions[1*8]
+BinkClose ENDP
+BinkCloseTrack PROC
+	jmp ImportedFunctions[2*8]
+BinkCloseTrack ENDP
+BinkControlBackgroundIO PROC
+	jmp ImportedFunctions[3*8]
+BinkControlBackgroundIO ENDP
+BinkCopyToBuffer PROC
+	jmp ImportedFunctions[4*8]
+BinkCopyToBuffer ENDP
+BinkCopyToBufferRect PROC
+	jmp ImportedFunctions[5*8]
+BinkCopyToBufferRect ENDP
+BinkDoFrame PROC
+	jmp ImportedFunctions[6*8]
+BinkDoFrame ENDP
+BinkDoFrameAsync PROC
+	jmp ImportedFunctions[7*8]
+BinkDoFrameAsync ENDP
+BinkDoFrameAsyncMulti PROC
+	jmp ImportedFunctions[8*8]
+BinkDoFrameAsyncMulti ENDP
+BinkDoFrameAsyncWait PROC
+	jmp ImportedFunctions[9*8]
+BinkDoFrameAsyncWait ENDP
+BinkDoFramePlane PROC
+	jmp ImportedFunctions[10*8]
+BinkDoFramePlane ENDP
+BinkFreeGlobals PROC
+	jmp ImportedFunctions[11*8]
+BinkFreeGlobals ENDP
+BinkGetError PROC
+	jmp ImportedFunctions[12*8]
+BinkGetError ENDP
+BinkGetFrameBuffersInfo PROC
+	jmp ImportedFunctions[13*8]
+BinkGetFrameBuffersInfo ENDP
+BinkGetGPUDataBuffersInfo PROC
+	jmp ImportedFunctions[14*8]
+BinkGetGPUDataBuffersInfo ENDP
+BinkGetKeyFrame PROC
+	jmp ImportedFunctions[15*8]
+BinkGetKeyFrame ENDP
+BinkGetPlatformInfo PROC
+	jmp ImportedFunctions[16*8]
+BinkGetPlatformInfo ENDP
+BinkGetRealtime PROC
+	jmp ImportedFunctions[17*8]
+BinkGetRealtime ENDP
+BinkGetRects PROC
+	jmp ImportedFunctions[18*8]
+BinkGetRects ENDP
+BinkGetSummary PROC
+	jmp ImportedFunctions[19*8]
+BinkGetSummary ENDP
+BinkGetTrackData PROC
+	jmp ImportedFunctions[20*8]
+BinkGetTrackData ENDP
+BinkGetTrackID PROC
+	jmp ImportedFunctions[21*8]
+BinkGetTrackID ENDP
+BinkGetTrackMaxSize PROC
+	jmp ImportedFunctions[22*8]
+BinkGetTrackMaxSize ENDP
+BinkGetTrackType PROC
+	jmp ImportedFunctions[23*8]
+BinkGetTrackType ENDP
+BinkGoto PROC
+	jmp ImportedFunctions[24*8]
+BinkGoto ENDP
+BinkLogoAddress PROC
+	jmp ImportedFunctions[25*8]
+BinkLogoAddress ENDP
+BinkNextFrame PROC
+	jmp ImportedFunctions[26*8]
+BinkNextFrame ENDP
+BinkOpen PROC
+	jmp ImportedFunctions[27*8]
+BinkOpen ENDP
+BinkOpenDirectSound PROC
+	jmp ImportedFunctions[28*8]
+BinkOpenDirectSound ENDP
+BinkOpenMiles PROC
+	jmp ImportedFunctions[29*8]
+BinkOpenMiles ENDP
+BinkOpenTrack PROC
+	jmp ImportedFunctions[30*8]
+BinkOpenTrack ENDP
+BinkOpenWaveOut PROC
+	jmp ImportedFunctions[31*8]
+BinkOpenWaveOut ENDP
+BinkOpenWithOptions PROC
+	jmp ImportedFunctions[32*8]
+BinkOpenWithOptions ENDP
+BinkOpenXAudio2 PROC
+	jmp ImportedFunctions[33*8]
+BinkOpenXAudio2 ENDP
+BinkOpenXAudio27 PROC
+	jmp ImportedFunctions[34*8]
+BinkOpenXAudio27 ENDP
+BinkOpenXAudio28 PROC
+	jmp ImportedFunctions[35*8]
+BinkOpenXAudio28 ENDP
+BinkPause PROC
+	jmp ImportedFunctions[36*8]
+BinkPause ENDP
+BinkRegisterFrameBuffers PROC
+	jmp ImportedFunctions[37*8]
+BinkRegisterFrameBuffers ENDP
+BinkRegisterGPUDataBuffers PROC
+	jmp ImportedFunctions[38*8]
+BinkRegisterGPUDataBuffers ENDP
+BinkRequestStopAsyncThread PROC
+	jmp ImportedFunctions[39*8]
+BinkRequestStopAsyncThread ENDP
+BinkRequestStopAsyncThreadsMulti PROC
+	jmp ImportedFunctions[40*8]
+BinkRequestStopAsyncThreadsMulti ENDP
+BinkService PROC
+	jmp ImportedFunctions[41*8]
+BinkService ENDP
+BinkSetError PROC
+	jmp ImportedFunctions[42*8]
+BinkSetError ENDP
+BinkSetFileOffset PROC
+	jmp ImportedFunctions[43*8]
+BinkSetFileOffset ENDP
+BinkSetFrameRate PROC
+	jmp ImportedFunctions[44*8]
+BinkSetFrameRate ENDP
+BinkSetIO PROC
+	jmp ImportedFunctions[45*8]
+BinkSetIO ENDP
+BinkSetIOSize PROC
+	jmp ImportedFunctions[46*8]
+BinkSetIOSize ENDP
+BinkSetMemory PROC
+	jmp ImportedFunctions[47*8]
+BinkSetMemory ENDP
+BinkSetOSFileCallbacks PROC
+	jmp ImportedFunctions[48*8]
+BinkSetOSFileCallbacks ENDP
+BinkSetPan PROC
+	jmp ImportedFunctions[49*8]
+BinkSetPan ENDP
+BinkSetSimulate PROC
+	jmp ImportedFunctions[50*8]
+BinkSetSimulate ENDP
+BinkSetSoundOnOff PROC
+	jmp ImportedFunctions[51*8]
+BinkSetSoundOnOff ENDP
+BinkSetSoundSystem PROC
+	jmp ImportedFunctions[52*8]
+BinkSetSoundSystem ENDP
+BinkSetSoundSystem2 PROC
+	jmp ImportedFunctions[53*8]
+BinkSetSoundSystem2 ENDP
+BinkSetSoundTrack PROC
+	jmp ImportedFunctions[54*8]
+BinkSetSoundTrack ENDP
+BinkSetSpeakerVolumes PROC
+	jmp ImportedFunctions[55*8]
+BinkSetSpeakerVolumes ENDP
+BinkSetVideoOnOff PROC
+	jmp ImportedFunctions[56*8]
+BinkSetVideoOnOff ENDP
+BinkSetVolume PROC
+	jmp ImportedFunctions[57*8]
+BinkSetVolume ENDP
+BinkSetWillLoop PROC
+	jmp ImportedFunctions[58*8]
+BinkSetWillLoop ENDP
+BinkShouldSkip PROC
+	jmp ImportedFunctions[59*8]
+BinkShouldSkip ENDP
+BinkStartAsyncThread PROC
+	jmp ImportedFunctions[60*8]
+BinkStartAsyncThread ENDP
+BinkUtilCPUs PROC
+	jmp ImportedFunctions[61*8]
+BinkUtilCPUs ENDP
+BinkUtilFree PROC
+	jmp ImportedFunctions[62*8]
+BinkUtilFree ENDP
+BinkUtilMalloc PROC
+	jmp ImportedFunctions[63*8]
+BinkUtilMalloc ENDP
+BinkUtilMutexCreate PROC
+	jmp ImportedFunctions[64*8]
+BinkUtilMutexCreate ENDP
+BinkUtilMutexDestroy PROC
+	jmp ImportedFunctions[65*8]
+BinkUtilMutexDestroy ENDP
+BinkUtilMutexLock PROC
+	jmp ImportedFunctions[66*8]
+BinkUtilMutexLock ENDP
+BinkUtilMutexLockTimeOut PROC
+	jmp ImportedFunctions[67*8]
+BinkUtilMutexLockTimeOut ENDP
+BinkUtilMutexUnlock PROC
+	jmp ImportedFunctions[68*8]
+BinkUtilMutexUnlock ENDP
+BinkWait PROC
+	jmp ImportedFunctions[69*8]
+BinkWait ENDP
+BinkWaitStopAsyncThread PROC
+	jmp ImportedFunctions[70*8]
+BinkWaitStopAsyncThread ENDP
+BinkWaitStopAsyncThreadsMulti PROC
+	jmp ImportedFunctions[71*8]
+BinkWaitStopAsyncThreadsMulti ENDP
+RADTimerRead PROC
+	jmp ImportedFunctions[72*8]
+RADTimerRead ENDP
+end
