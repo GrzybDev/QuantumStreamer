@@ -1,0 +1,49 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+  release:
+    types: [published]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build
+    permissions: write-all
+
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Integrate vcpkg
+        run: vcpkg integrate install
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          queries: security-extended,security-and-quality
+          languages: "cpp"
+          source-root: bink2w64
+
+      - name: Autobuild hook
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        if: ${{ github.event_name != 'release' }}
+        uses: github/codeql-action/analyze@v3
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ReleaseBuild
+          path: x64\Release
+
+      - name: Upload Release
+        if: ${{ github.event_name == 'release' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ./x64/Release/bink2w64.dll

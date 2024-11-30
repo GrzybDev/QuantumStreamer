@@ -1,0 +1,8 @@
+{
+  "dependencies": [
+    "boost-beast",
+    "boost-format",
+    "boost-log",
+    "boost-url"
+  ]
+}
