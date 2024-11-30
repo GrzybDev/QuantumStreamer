@@ -13,5 +13,7 @@
 #include "Utils.hpp"
 #include "StreamingServerSocket.hpp"
 #include "StreamingServerConnection.hpp"
+#include "HttpClient.hpp"
+#include "VideoList.hpp"
 
 #endif //PCH_H

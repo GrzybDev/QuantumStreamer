@@ -23,6 +23,7 @@ StreamingServer::StreamingServer()
 
 	// Create an io_service object for asynchronous I/O
 	boost::asio::io_service ioService;
+	const auto httpClient = std::make_shared<HttpClient>(ioService);
 
 	new StreamingServerSocket(ioService, streamingPort, httpClient);
 

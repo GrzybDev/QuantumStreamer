@@ -1,12 +1,15 @@
 #pragma once
+#include "VideoList.hpp"
 
 class StreamingServerConnection : public std::enable_shared_from_this<StreamingServerConnection>
 {
 public:
-	explicit StreamingServerConnection(boost::asio::ip::tcp::socket socket);
+	explicit StreamingServerConnection(boost::asio::ip::tcp::socket socket, const std::shared_ptr<HttpClient>& httpClient);
 	void Start();
 
 private:
+	std::shared_ptr<HttpClient> httpClient_;
+
 	// The socket for the currently connected client.
 	boost::asio::ip::tcp::socket socket_;
 	// The buffer for performing reads.
@@ -17,6 +20,8 @@ private:
 
 	// The response message.
 	boost::beast::http::response<boost::beast::http::dynamic_body> response_;
+
+	VideoList videoList = VideoList::GetInstance();
 
 	void ReadRequest();
 	void ProcessRequest();

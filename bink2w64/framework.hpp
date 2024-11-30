@@ -10,6 +10,7 @@
 
 // Standard C++ Library Headers
 #include <vector>
+#include <fstream>
 
 // Boost Library Headers
 #include <boost/filesystem.hpp>
@@ -25,3 +26,6 @@
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
 #include <boost/asio/placeholders.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
+#include <boost/url.hpp>

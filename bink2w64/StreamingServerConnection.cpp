@@ -4,9 +4,9 @@ namespace beast = boost::beast; // from <boost/beast.hpp>
 namespace http = beast::http; // from <boost/beast/http.hpp>
 using tcp = boost::asio::ip::tcp; // from <boost/asio/ip/tcp.hpp>
 
-StreamingServerConnection::StreamingServerConnection(tcp::socket socket) : socket_(std::move(socket))
+StreamingServerConnection::StreamingServerConnection(tcp::socket socket, const std::shared_ptr<HttpClient>& httpClient) : socket_(std::move(socket))
 {
-	BOOST_LOG_FUNCTION()
+	httpClient_ = httpClient;
 }
 
 
@@ -37,21 +37,42 @@ void StreamingServerConnection::ProcessRequest()
 	response_.version(request_.version());
 	response_.keep_alive(false);
 
-	switch (request_.method())
-	{
-	case http::verb::get:
-		response_.result(http::status::ok);
-		response_.set(http::field::content_type, "text/html");
-		beast::ostream(response_.body())
-			<< "<h1>It works!</h1>\n";
-		break;
+	// Expected URL format: /<episode>/manifest,/<episode>/<bitrate>/<fragment>
 
-	default:
-		// We return responses indicating an error if
-		// we do not recognize the request method.
-		response_.result(http::status::bad_request);
-		break;
+	if (request_.method() == http::verb::get)
+	{
+		const std::string target = request_.target();
+		const std::string episode = target.substr(1, target.find_first_of("/", 1) - 1);
+		const std::string action = target.substr(target.find_first_of("/", 1) + 1);
+
+		const std::string manifestUrl = videoList.GetEpisodeURL(episode);
+		if (manifestUrl.empty())
+			response_.result(http::status::not_found);
+		else
+		{
+			if (action == "manifest")
+			{
+				auto response = httpClient_->Get(manifestUrl);
+				response_.body() = response.body();
+			}
+			else
+			{
+				boost::system::result<boost::url_view> urlView(manifestUrl);
+				std::string fragmentUrl = urlView.value().scheme();
+				fragmentUrl += "://" + urlView.value().host();
+
+				std::string newPath = urlView.value().path();
+				boost::replace_all(newPath, "manifest", action);
+
+				fragmentUrl += "/" + newPath;
+
+				auto response = httpClient_->Get(fragmentUrl);
+				response_.body() = response.body();
+			}
+		}
 	}
+	else
+		response_.result(http::status::bad_request);
 
 	WriteResponse();
 }
@@ -61,8 +82,7 @@ void StreamingServerConnection::WriteResponse()
 {
 	auto self = shared_from_this();
 
-	BOOST_LOG_TRIVIAL(debug) << boost::format("%s %s [%s %s]") % request_.method_string() % request_.target() %
- response_.result_int() % response_.result();
+	BOOST_LOG_TRIVIAL(debug) << boost::format("%s %s [%s %s]") % request_.method_string() % request_.target() % response_.result_int() % response_.result();
 	response_.content_length(response_.body().size());
 
 	http::async_write(

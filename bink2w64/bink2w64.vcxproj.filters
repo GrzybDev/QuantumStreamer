@@ -13,10 +13,10 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Header Files\Proxy">
+    <Filter Include="Header Files\Server">
       <UniqueIdentifier>{3e812c6c-f917-421b-83fb-9ec4a5f8cab4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Proxy">
+    <Filter Include="Source Files\Server">
       <UniqueIdentifier>{2be9a0d6-c67c-425c-ac76-942a1c7d5af6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -28,19 +28,25 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ExitCode.hpp">
-      <Filter>Header Files\Proxy</Filter>
+      <Filter>Header Files\Server</Filter>
     </ClInclude>
     <ClInclude Include="StreamingServer.hpp">
-      <Filter>Header Files\Proxy</Filter>
+      <Filter>Header Files\Server</Filter>
     </ClInclude>
     <ClInclude Include="Utils.hpp">
-      <Filter>Header Files\Proxy</Filter>
+      <Filter>Header Files\Server</Filter>
     </ClInclude>
     <ClInclude Include="StreamingServerSocket.hpp">
-      <Filter>Header Files\Proxy</Filter>
+      <Filter>Header Files\Server</Filter>
     </ClInclude>
     <ClInclude Include="StreamingServerConnection.hpp">
-      <Filter>Header Files\Proxy</Filter>
+      <Filter>Header Files\Server</Filter>
+    </ClInclude>
+    <ClInclude Include="HttpClient.hpp">
+      <Filter>Header Files\Server</Filter>
+    </ClInclude>
+    <ClInclude Include="VideoList.hpp">
+      <Filter>Header Files\Server</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -51,16 +57,22 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="StreamingServer.cpp">
-      <Filter>Source Files\Proxy</Filter>
+      <Filter>Source Files\Server</Filter>
     </ClCompile>
     <ClCompile Include="Utils.cpp">
-      <Filter>Source Files\Proxy</Filter>
+      <Filter>Source Files\Server</Filter>
     </ClCompile>
     <ClCompile Include="StreamingServerSocket.cpp">
-      <Filter>Source Files\Proxy</Filter>
+      <Filter>Source Files\Server</Filter>
     </ClCompile>
     <ClCompile Include="StreamingServerConnection.cpp">
-      <Filter>Source Files\Proxy</Filter>
+      <Filter>Source Files\Server</Filter>
+    </ClCompile>
+    <ClCompile Include="HttpClient.cpp">
+      <Filter>Source Files\Server</Filter>
+    </ClCompile>
+    <ClCompile Include="VideoList.cpp">
+      <Filter>Source Files\Server</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
