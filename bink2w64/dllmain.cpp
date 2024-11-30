@@ -1,6 +1,8 @@
 // dllmain.cpp : Defines the entry point for the DLL application.
 #include "pch.hpp"
 
+#include "StreamingServer.hpp"
+
 extern "C" uintptr_t ImportedFunctions[73] = {};
 HMODULE OriginalLibrary = nullptr;
 
@@ -88,7 +90,8 @@ VOID LoadOriginalLibrary(const LPCSTR libraryName)
 
 	if (OriginalLibrary == nullptr)
 	{
-		MessageBoxA(nullptr, "Failed to load bink2w64_original.dll! Cannot continue.", "Failed to initialize hook!", MB_ICONERROR);
+		MessageBoxA(nullptr, "Failed to load bink2w64_original.dll! Cannot continue.", "Failed to initialize hook!",
+		            MB_ICONERROR);
 		ExitProcess(DLL_LOAD_FAILURE);
 	}
 
@@ -96,14 +99,16 @@ VOID LoadOriginalLibrary(const LPCSTR libraryName)
 		ImportedFunctions[i] = reinterpret_cast<uintptr_t>(GetProcAddress(OriginalLibrary, BinkFunctions[i]));
 }
 
-DWORD WINAPI InitHook(LPVOID /*lpParam*/)
+DWORD WINAPI InitServer(LPVOID /*lpParam*/)
 {
+	StreamingServer::GetInstance();
+
 	return NULL;
 }
 
 BOOL APIENTRY DllMain(HMODULE /*hModule*/,
-	const DWORD ulReasonForCall,
-	LPVOID /*lpReserved*/
+                      const DWORD ulReasonForCall,
+                      LPVOID /*lpReserved*/
 )
 {
 	// If the DLL is being loaded, load the original library and create a new thread to initialize the hook
@@ -111,7 +116,7 @@ BOOL APIENTRY DllMain(HMODULE /*hModule*/,
 	{
 		LoadOriginalLibrary("bink2w64_original.dll");
 
-		CreateThread(nullptr, NULL, InitHook, nullptr, NULL, nullptr);
+		CreateThread(nullptr, NULL, InitServer, nullptr, NULL, nullptr);
 	}
 
 	return TRUE;

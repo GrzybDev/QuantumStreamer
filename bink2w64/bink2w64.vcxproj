@@ -95,6 +95,10 @@
     <ClInclude Include="ExitCode.hpp" />
     <ClInclude Include="framework.hpp" />
     <ClInclude Include="pch.hpp" />
+    <ClInclude Include="StreamingServer.hpp" />
+    <ClInclude Include="StreamingServerSocket.hpp" />
+    <ClInclude Include="StreamingServerConnection.hpp" />
+    <ClInclude Include="Utils.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
@@ -102,6 +106,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="StreamingServer.cpp" />
+    <ClCompile Include="StreamingServerSocket.cpp" />
+    <ClCompile Include="StreamingServerConnection.cpp" />
+    <ClCompile Include="Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <MASM Include="bink2w64.asm" />

@@ -16,6 +16,9 @@
     <Filter Include="Header Files\Proxy">
       <UniqueIdentifier>{3e812c6c-f917-421b-83fb-9ec4a5f8cab4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Proxy">
+      <UniqueIdentifier>{2be9a0d6-c67c-425c-ac76-942a1c7d5af6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.hpp">
@@ -27,6 +30,18 @@
     <ClInclude Include="ExitCode.hpp">
       <Filter>Header Files\Proxy</Filter>
     </ClInclude>
+    <ClInclude Include="StreamingServer.hpp">
+      <Filter>Header Files\Proxy</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils.hpp">
+      <Filter>Header Files\Proxy</Filter>
+    </ClInclude>
+    <ClInclude Include="StreamingServerSocket.hpp">
+      <Filter>Header Files\Proxy</Filter>
+    </ClInclude>
+    <ClInclude Include="StreamingServerConnection.hpp">
+      <Filter>Header Files\Proxy</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -34,6 +49,18 @@
     </ClCompile>
     <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StreamingServer.cpp">
+      <Filter>Source Files\Proxy</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils.cpp">
+      <Filter>Source Files\Proxy</Filter>
+    </ClCompile>
+    <ClCompile Include="StreamingServerSocket.cpp">
+      <Filter>Source Files\Proxy</Filter>
+    </ClCompile>
+    <ClCompile Include="StreamingServerConnection.cpp">
+      <Filter>Source Files\Proxy</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
