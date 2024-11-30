@@ -4,7 +4,8 @@
 class StreamingServerConnection : public std::enable_shared_from_this<StreamingServerConnection>
 {
 public:
-	explicit StreamingServerConnection(boost::asio::ip::tcp::socket socket, const std::shared_ptr<HttpClient>& httpClient);
+	explicit StreamingServerConnection(boost::asio::ip::tcp::socket socket,
+	                                   const std::shared_ptr<HttpClient>& httpClient);
 	void Start();
 
 private:
@@ -25,6 +26,5 @@ private:
 
 	void ReadRequest();
 	void ProcessRequest();
-	void CreateResponse();
 	void WriteResponse();
 };

@@ -4,7 +4,8 @@
 class StreamingServerSocket : boost::asio::noncopyable
 {
 public:
-	StreamingServerSocket(boost::asio::io_service& ioService, USHORT port, const std::shared_ptr<HttpClient>& httpClient);
+	StreamingServerSocket(boost::asio::io_service& ioService, USHORT port,
+	                      const std::shared_ptr<HttpClient>& httpClient);
 
 private:
 	boost::asio::ip::tcp::acceptor acceptor_;

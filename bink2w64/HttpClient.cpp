@@ -42,7 +42,7 @@ http::response<http::dynamic_body> HttpClient::Get(std::string urlString)
 		target += "#" + urlView.value().fragment();
 
 	// Send the HTTP request to the remote host
-	http::request<http::string_body> request{ http::verb::get, target, 11 };
+	http::request<http::string_body> request{http::verb::get, target, 11};
 	request.set(http::field::host, host);
 	request.set(http::field::user_agent, "QuantumStreamer/1.0");
 	http::write(client_, request);
@@ -56,7 +56,7 @@ http::response<http::dynamic_body> HttpClient::Get(std::string urlString)
 	// so don't bother reporting it.
 	//
 	if (ec && ec != beast::errc::not_connected)
-		throw beast::system_error{ ec };
+		throw beast::system_error{ec};
 
 	return res;
 }

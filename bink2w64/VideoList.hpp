@@ -24,6 +24,7 @@ public:
 	}
 
 	std::string GetEpisodeURL(std::string episode);
+
 private:
 	void ReadVideoList(std::string path);
 

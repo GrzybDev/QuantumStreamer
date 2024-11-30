@@ -19,7 +19,8 @@ void VideoList::ReadVideoList(std::string path)
 	else
 	{
 		// Read the video list bytes
-		std::vector<char> videoListBytes((std::istreambuf_iterator<char>(fileStream)), std::istreambuf_iterator<char>());
+		std::vector<char> videoListBytes((std::istreambuf_iterator<char>(fileStream)),
+		                                 std::istreambuf_iterator<char>());
 		fileStream.close();
 
 		// Decrypt the video list bytes

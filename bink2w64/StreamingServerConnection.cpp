@@ -4,7 +4,9 @@ namespace beast = boost::beast; // from <boost/beast.hpp>
 namespace http = beast::http; // from <boost/beast/http.hpp>
 using tcp = boost::asio::ip::tcp; // from <boost/asio/ip/tcp.hpp>
 
-StreamingServerConnection::StreamingServerConnection(tcp::socket socket, const std::shared_ptr<HttpClient>& httpClient) : socket_(std::move(socket))
+StreamingServerConnection::StreamingServerConnection(tcp::socket socket,
+                                                     const std::shared_ptr<HttpClient>& httpClient) : socket_(
+	std::move(socket))
 {
 	httpClient_ = httpClient;
 }
@@ -37,8 +39,6 @@ void StreamingServerConnection::ProcessRequest()
 	response_.version(request_.version());
 	response_.keep_alive(false);
 
-	// Expected URL format: /<episode>/manifest,/<episode>/<bitrate>/<fragment>
-
 	if (request_.method() == http::verb::get)
 	{
 		const std::string target = request_.target();
@@ -50,24 +50,87 @@ void StreamingServerConnection::ProcessRequest()
 			response_.result(http::status::not_found);
 		else
 		{
+			std::string baseLocalPath = "videos\\episodes\\" + episode + "\\";
+
 			if (action == "manifest")
 			{
-				auto response = httpClient_->Get(manifestUrl);
-				response_.body() = response.body();
+				std::string manifestPath = baseLocalPath + "manifest.ismc";
+
+				if (!boost::filesystem::exists(manifestPath))
+				{
+					try
+					{
+						auto response = httpClient_->Get(manifestUrl);
+						response_.body() = response.body();
+					}
+					catch (...)
+					{
+						response_.result(http::status::internal_server_error);
+					}
+				}
+				else
+				{
+					std::ifstream fileStream(manifestPath, std::ios::binary);
+					std::vector<char> fileBytes((std::istreambuf_iterator<char>(fileStream)),
+					                            std::istreambuf_iterator<char>());
+
+					ostream(response_.body()) << std::string(fileBytes.begin(), fileBytes.end());
+				}
 			}
 			else
 			{
-				boost::system::result<boost::url_view> urlView(manifestUrl);
-				std::string fragmentUrl = urlView.value().scheme();
-				fragmentUrl += "://" + urlView.value().host();
+				boost::regex pattern("QualityLevels\\((.*)\\)/Fragments\\((.*)=(.*)\\)");
+				boost::smatch match;
 
-				std::string newPath = urlView.value().path();
-				boost::replace_all(newPath, "manifest", action);
+				if (!regex_search(action, match, pattern))
+					response_.result(http::status::bad_request);
+				else
+				{
+					std::string bitrate = match.str(1);
+					std::string type = match.str(2);
+					std::string starttime = match.str(3);
 
-				fragmentUrl += "/" + newPath;
+					std::string typechar;
+					int captions_res = type.find("_captions");
 
-				auto response = httpClient_->Get(fragmentUrl);
-				response_.body() = response.body();
+					if (type == "video")
+						typechar = "v";
+					else if (captions_res != std::string::npos)
+						typechar = "t";
+					else
+						typechar = "a";
+
+					std::string chunkPath = baseLocalPath + type + "\\" + starttime + ".ism" + typechar;
+
+					if (!boost::filesystem::exists(chunkPath))
+					{
+						boost::system::result<boost::url_view> urlView(manifestUrl);
+						std::string fragmentUrl = urlView.value().scheme();
+						fragmentUrl += "://" + urlView.value().host();
+
+						std::string newPath = urlView.value().path();
+						boost::replace_all(newPath, "manifest", action);
+
+						fragmentUrl += "/" + newPath;
+
+						try
+						{
+							auto response = httpClient_->Get(fragmentUrl);
+							response_.body() = response.body();
+						}
+						catch (...)
+						{
+							response_.result(http::status::internal_server_error);
+						}
+					}
+					else
+					{
+						std::ifstream fileStream(chunkPath, std::ios::binary);
+						std::vector<char> fileBytes((std::istreambuf_iterator<char>(fileStream)),
+						                            std::istreambuf_iterator<char>());
+						ostream(response_.body()) << std::string(fileBytes.begin(), fileBytes.end());
+					}
+				}
 			}
 		}
 	}
@@ -82,7 +145,8 @@ void StreamingServerConnection::WriteResponse()
 {
 	auto self = shared_from_this();
 
-	BOOST_LOG_TRIVIAL(debug) << boost::format("%s %s [%s %s]") % request_.method_string() % request_.target() % response_.result_int() % response_.result();
+	BOOST_LOG_TRIVIAL(debug) << boost::format("%s %s [%s %s]") % request_.method_string() % request_.target() %
+ response_.result_int() % response_.result();
 	response_.content_length(response_.body().size());
 
 	http::async_write(
