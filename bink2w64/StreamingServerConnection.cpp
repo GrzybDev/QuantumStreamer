@@ -53,91 +53,112 @@ void StreamingServerConnection::ProcessRequest()
 			std::string baseLocalPath = "videos\\episodes\\" + episode + "\\";
 
 			if (action == "manifest")
-			{
-				std::string manifestPath = baseLocalPath + "manifest.ismc";
-
-				if (!boost::filesystem::exists(manifestPath))
-				{
-					try
-					{
-						auto response = httpClient_->Get(manifestUrl);
-						response_.body() = response.body();
-					}
-					catch (...)
-					{
-						response_.result(http::status::internal_server_error);
-					}
-				}
-				else
-				{
-					std::ifstream fileStream(manifestPath, std::ios::binary);
-					std::vector<char> fileBytes((std::istreambuf_iterator<char>(fileStream)),
-					                            std::istreambuf_iterator<char>());
-
-					ostream(response_.body()) << std::string(fileBytes.begin(), fileBytes.end());
-				}
-			}
+				PrepareManifest(baseLocalPath, manifestUrl);
 			else
-			{
-				boost::regex pattern("QualityLevels\\((.*)\\)/Fragments\\((.*)=(.*)\\)");
-				boost::smatch match;
-
-				if (!regex_search(action, match, pattern))
-					response_.result(http::status::bad_request);
-				else
-				{
-					std::string bitrate = match.str(1);
-					std::string type = match.str(2);
-					std::string starttime = match.str(3);
-
-					std::string typechar;
-					int captions_res = type.find("_captions");
-
-					if (type == "video")
-						typechar = "v";
-					else if (captions_res != std::string::npos)
-						typechar = "t";
-					else
-						typechar = "a";
-
-					std::string chunkPath = baseLocalPath + type + "\\" + starttime + ".ism" + typechar;
-
-					if (!boost::filesystem::exists(chunkPath))
-					{
-						boost::system::result<boost::url_view> urlView(manifestUrl);
-						std::string fragmentUrl = urlView.value().scheme();
-						fragmentUrl += "://" + urlView.value().host();
-
-						std::string newPath = urlView.value().path();
-						boost::replace_all(newPath, "manifest", action);
-
-						fragmentUrl += "/" + newPath;
-
-						try
-						{
-							auto response = httpClient_->Get(fragmentUrl);
-							response_.body() = response.body();
-						}
-						catch (...)
-						{
-							response_.result(http::status::internal_server_error);
-						}
-					}
-					else
-					{
-						std::ifstream fileStream(chunkPath, std::ios::binary);
-						std::vector<char> fileBytes((std::istreambuf_iterator<char>(fileStream)),
-						                            std::istreambuf_iterator<char>());
-						ostream(response_.body()) << std::string(fileBytes.begin(), fileBytes.end());
-					}
-				}
-			}
+				PrepareSegment(baseLocalPath, manifestUrl, action, episode);
 		}
 	}
 	else
 		response_.result(http::status::bad_request);
 
 	WriteResponse();
+}
+
+void StreamingServerConnection::PrepareManifest(std::string basePath, std::string manifestUrl)
+{
+	std::string manifestPath = basePath + "manifest.ismc";
+
+	if (!boost::filesystem::exists(manifestPath))
+	{
+		try
+		{
+			auto response = httpClient_->Get(manifestUrl);
+			response_.body() = response.body();
+		}
+		catch (...)
+		{
+			response_.result(http::status::internal_server_error);
+		}
+	}
+	else
+	{
+		std::ifstream fileStream(manifestPath, std::ios::binary);
+		std::vector<char> fileBytes((std::istreambuf_iterator<char>(fileStream)),
+		                            std::istreambuf_iterator<char>());
+
+		ostream(response_.body()) << std::string(fileBytes.begin(), fileBytes.end());
+	}
+}
+
+void StreamingServerConnection::PrepareSegment(std::string basePath, std::string manifestUrl, std::string action,
+                                               std::string episode)
+{
+	boost::regex pattern("QualityLevels\\((.*)\\)/Fragments\\((.*)=(.*)\\)");
+	boost::smatch match;
+
+	if (!regex_search(action, match, pattern))
+		response_.result(http::status::bad_request);
+	else
+	{
+		std::string bitrate = match.str(1);
+		std::string type = match.str(2);
+		std::string starttime = match.str(3);
+
+		std::string typechar;
+		bool isCaptions = false;
+		int captions_res = type.find("_captions");
+
+		if (type == "video")
+			typechar = "v";
+		else if (captions_res != std::string::npos)
+		{
+			isCaptions = true;
+			typechar = "t";
+		}
+		else
+			typechar = "a";
+
+		std::string chunkPath = basePath + type + "\\" + starttime + ".ism" + typechar;
+		std::string responseBytes;
+
+		if (!boost::filesystem::exists(chunkPath))
+		{
+			boost::system::result<boost::url_view> urlView(manifestUrl);
+			std::string fragmentUrl = urlView.value().scheme();
+			fragmentUrl += "://" + urlView.value().host();
+
+			std::string newPath = urlView.value().path();
+			boost::replace_all(newPath, "manifest", action);
+
+			fragmentUrl += "/" + newPath;
+
+			try
+			{
+				auto response = httpClient_->Get(fragmentUrl);
+				responseBytes = buffers_to_string(response.body().data());
+			}
+			catch (...)
+			{
+				response_.result(http::status::internal_server_error);
+			}
+		}
+		else
+		{
+			std::ifstream fileStream(chunkPath, std::ios::binary);
+			std::vector<char> fileBytes((std::istreambuf_iterator<char>(fileStream)),
+			                            std::istreambuf_iterator<char>());
+			responseBytes = std::string(fileBytes.begin(), fileBytes.end());
+		}
+
+		if (isCaptions)
+		{
+			auto subtitles = SubtitleOverride::GetInstance();
+			std::string subtitleBytes = subtitles.GetSubtitleOverride(episode, type, responseBytes);
+			ostream(response_.body()) << subtitleBytes;
+		}
+		else
+			ostream(response_.body()) << responseBytes;
+	}
 }
 
 

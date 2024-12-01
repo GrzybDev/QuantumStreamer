@@ -15,5 +15,6 @@
 #include "StreamingServerConnection.hpp"
 #include "HttpClient.hpp"
 #include "VideoList.hpp"
+#include "SubtitleOverride.hpp"
 
 #endif //PCH_H

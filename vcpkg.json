@@ -3,6 +3,7 @@
     "boost-beast",
     "boost-format",
     "boost-log",
-    "boost-url"
+    "boost-url",
+    "pugixml"
   ]
 }

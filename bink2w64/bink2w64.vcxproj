@@ -99,6 +99,7 @@
     <ClInclude Include="StreamingServer.hpp" />
     <ClInclude Include="StreamingServerSocket.hpp" />
     <ClInclude Include="StreamingServerConnection.hpp" />
+    <ClInclude Include="SubtitleOverride.hpp" />
     <ClInclude Include="Utils.hpp" />
     <ClInclude Include="VideoList.hpp" />
   </ItemGroup>
@@ -112,6 +113,7 @@
     <ClCompile Include="StreamingServer.cpp" />
     <ClCompile Include="StreamingServerSocket.cpp" />
     <ClCompile Include="StreamingServerConnection.cpp" />
+    <ClCompile Include="SubtitleOverride.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="VideoList.cpp" />
   </ItemGroup>

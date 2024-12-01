@@ -21,6 +21,9 @@ StreamingServer::StreamingServer()
 	BOOST_LOG_FUNCTION()
 	BOOST_LOG_TRIVIAL(info) << "Initializing...";
 
+	VideoList::GetInstance(); // Preload the video list
+	SubtitleOverride::GetInstance(); // Preload the subtitle overrides for all episodes
+
 	// Create an io_service object for asynchronous I/O
 	boost::asio::io_service ioService;
 	const auto httpClient = std::make_shared<HttpClient>(ioService);

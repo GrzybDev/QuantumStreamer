@@ -30,3 +30,6 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/url.hpp>
 #include <boost/regex.hpp>
+
+// pugixml
+#include <pugixml.hpp>
