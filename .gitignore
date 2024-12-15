@@ -354,7 +354,6 @@ MigrationBackup/
 
 .vscode/
 *.code-workspace
-/vcpkg-configuration.json
 /buildtrees/
 /build*/
 /downloads/
