@@ -19,5 +19,6 @@ public:
 	std::string GetSubtitleOverride(std::string episode, std::string subtitleName, std::string& originalChunk);
 
 private:
+	bool enableCC = false;
 	std::map<std::string, std::map<std::string, std::map<std::string, std::string>>> subtitleOverrides;
 };

@@ -2,7 +2,9 @@
 
 SubtitleOverride::SubtitleOverride()
 {
-	const auto videoList = VideoList::GetInstance();
+	enableCC = boost::filesystem::exists("enableCC");
+
+	const auto& videoList = VideoList::GetInstance();
 
 	for (const auto& episode : videoList.episodeManifests)
 		LoadOverrides(episode.first);
@@ -90,6 +92,13 @@ std::string SubtitleOverride::GetSubtitleOverride(std::string episode, std::stri
 							subtitleName].end())
 						{
 							std::string overrideText = subtitleOverrides[episode][subtitleName][subtitle_id];
+
+							if (!enableCC)
+							{
+								boost::regex ccRegex("[ -]*\\[ .* \\]");
+								overrideText = boost::regex_replace(overrideText, ccRegex, "");
+							}
+
 							p.child("span").text().set(overrideText.c_str());
 							isModified = true;
 						}
