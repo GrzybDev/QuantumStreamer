@@ -3,7 +3,7 @@
 SmoothStreaming::SmoothStreaming()
 {
 	BOOST_LOG_FUNCTION();
-	BOOST_LOG_TRIVIAL(info) << "Pre-loading smooth streams...";
+	BOOST_LOG_TRIVIAL(info) << "Preloading smooth streams...";
 
 	// Read all .ism files in episodes directory
 	if (exists(episodes_path) && is_directory(episodes_path))
@@ -18,7 +18,7 @@ SmoothStreaming::SmoothStreaming()
 				{
 					if (is_regular_file(entry) && entry.path().extension().string() == ".ism")
 					{
-						BOOST_LOG_TRIVIAL(info) << "Found smooth stream: " << entry.path().string();
+						BOOST_LOG_TRIVIAL(debug) << "Found smooth stream: " << entry.path().string();
 
 						std::string episode_id = entry.path().parent_path().filename().string();
 
@@ -55,8 +55,7 @@ SmoothStreaming::SmoothStreaming()
 									{
 										media.stream = stream;
 										smoothStreams[episode_id].push_back(media);
-										BOOST_LOG_TRIVIAL(info) << "Preloaded video stream for " << episode_id << ":" <<
- streamPath;
+										BOOST_LOG_TRIVIAL(debug) << "Preloaded video stream for " << episode_id << ":" << streamPath;
 									}
 									else
 									{
@@ -87,8 +86,7 @@ SmoothStreaming::SmoothStreaming()
 									{
 										media.stream = stream;
 										smoothStreams[episode_id].push_back(media);
-										BOOST_LOG_TRIVIAL(info) << "Preloaded audio stream for " << episode_id << ":" <<
- streamPath;
+										BOOST_LOG_TRIVIAL(debug) << "Preloaded audio stream for " << episode_id << ":" << streamPath;
 									}
 									else
 									{
@@ -116,8 +114,7 @@ SmoothStreaming::SmoothStreaming()
 									{
 										media.stream = stream;
 										smoothStreams[episode_id].push_back(media);
-										BOOST_LOG_TRIVIAL(info) << "Preloaded text stream for " << episode_id << ":" <<
- streamPath;
+										BOOST_LOG_TRIVIAL(debug) << "Preloaded text stream for " << episode_id << ":" << streamPath;
 									}
 									else
 									{
@@ -134,7 +131,7 @@ SmoothStreaming::SmoothStreaming()
 		}
 	}
 
-	BOOST_LOG_TRIVIAL(info) << "Finished pre-loading smooth streams!";
+	BOOST_LOG_TRIVIAL(info) << "Finished preloading smooth streams!";
 }
 
 SmoothStreaming::SmoothStream SmoothStreaming::PreloadStream(std::string filePath)
@@ -302,8 +299,7 @@ std::string SmoothStreaming::GetFragment(std::string episodeId, std::string trac
 						return "";
 					}
 
-					BOOST_LOG_TRIVIAL(debug) << "Found local fragment at time: " << time << " for " << episodeId << ":"
- << trackName << " in " << media.src;
+					BOOST_LOG_TRIVIAL(debug) << "Found local fragment at time: " << time << " for " << episodeId << ":" << trackName << " in " << media.src;
 
 					fileStream.seekg(fragment.moofOffset);
 

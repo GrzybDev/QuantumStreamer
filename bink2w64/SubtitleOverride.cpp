@@ -51,7 +51,7 @@ void SubtitleOverride::LoadOverrides(std::string episode)
 					subtitleName.erase(subtitleName.find("_override"), 9); // enus_captions_override -> enus_captions
 					subtitleOverrides[episode][subtitleName] = subtitleOverrideMap;
 
-					BOOST_LOG_TRIVIAL(info) << "Loaded subtitle override for " << episode << ":" << subtitleName;
+					BOOST_LOG_TRIVIAL(debug) << "Loaded subtitle override for " << episode << ":" << subtitleName;
 				}
 				catch (const boost::property_tree::json_parser_error& e)
 				{
@@ -95,8 +95,7 @@ std::string SubtitleOverride::GetSubtitleOverride(std::string episode, std::stri
 						if (subtitleOverrides[episode][subtitleName].find(subtitle_id) != subtitleOverrides[episode][
 							subtitleName].end())
 						{
-							BOOST_LOG_TRIVIAL(debug) << "Subtitle override found for segment " << subtitle_id << " in "
- << episode << ":" << subtitleName << ", text will be replaced.";
+							BOOST_LOG_TRIVIAL(debug) << "Subtitle override found for segment " << subtitle_id << " in " << episode << ":" << subtitleName << ", text will be replaced.";
 
 							std::string overrideText = subtitleOverrides[episode][subtitleName][subtitle_id];
 
@@ -105,8 +104,7 @@ std::string SubtitleOverride::GetSubtitleOverride(std::string episode, std::stri
 								boost::regex ccRegex("[ -]*\\[ .* \\]");
 
 								if (regex_search(overrideText, ccRegex))
-									BOOST_LOG_TRIVIAL(debug) << "Removed closed captioning from subtitle: " << episode
- << ":" << subtitleName;
+									BOOST_LOG_TRIVIAL(debug) << "Removed closed captioning from subtitle: " << episode << ":" << subtitleName;
 
 								overrideText = regex_replace(overrideText, ccRegex, "");
 							}
@@ -116,8 +114,7 @@ std::string SubtitleOverride::GetSubtitleOverride(std::string episode, std::stri
 						}
 						else
 						{
-							BOOST_LOG_TRIVIAL(debug) << "No subtitle override found for segment " << subtitle_id <<
- " in " << episode << ":" << subtitleName << ", leaving unmodified.";
+							BOOST_LOG_TRIVIAL(debug) << "No subtitle override found for segment " << subtitle_id << " in " << episode << ":" << subtitleName << ", leaving unmodified.";
 						}
 					}
 				}
