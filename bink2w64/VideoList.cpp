@@ -2,12 +2,16 @@
 
 VideoList::VideoList()
 {
+	BOOST_LOG_FUNCTION();
+
 	// Load the video list from the file
 	ReadVideoList("data/videoList_original.rmdj");
 }
 
 void VideoList::ReadVideoList(std::string path)
 {
+	BOOST_LOG_TRIVIAL(info) << "Reading video list from: " << path;
+
 	std::ifstream fileStream(path, std::ios::binary);
 	std::string videoListString;
 

@@ -96,6 +96,7 @@
     <ClInclude Include="framework.hpp" />
     <ClInclude Include="HttpClient.hpp" />
     <ClInclude Include="pch.hpp" />
+    <ClInclude Include="SmoothStreaming.hpp" />
     <ClInclude Include="StreamingServer.hpp" />
     <ClInclude Include="StreamingServerSocket.hpp" />
     <ClInclude Include="StreamingServerConnection.hpp" />
@@ -110,6 +111,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="SmoothStreaming.cpp" />
     <ClCompile Include="StreamingServer.cpp" />
     <ClCompile Include="StreamingServerSocket.cpp" />
     <ClCompile Include="StreamingServerConnection.cpp" />

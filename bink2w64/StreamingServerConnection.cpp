@@ -42,20 +42,20 @@ void StreamingServerConnection::ProcessRequest()
 	if (request_.method() == http::verb::get)
 	{
 		const std::string target = request_.target();
-		const std::string episode = target.substr(1, target.find_first_of("/", 1) - 1);
+		std::string episode = target.substr(1, target.find_first_of("/", 1) - 1);
+		boost::replace_all(episode, "%20", " ");
 		const std::string action = target.substr(target.find_first_of("/", 1) + 1);
 
 		const std::string manifestUrl = videoList.GetEpisodeURL(episode);
+
 		if (manifestUrl.empty())
 			response_.result(http::status::not_found);
 		else
 		{
-			std::string baseLocalPath = "videos\\episodes\\" + episode + "\\";
-
 			if (action == "manifest")
-				PrepareManifest(baseLocalPath, manifestUrl);
+				SendManifest(episode, manifestUrl);
 			else
-				PrepareSegment(baseLocalPath, manifestUrl, action, episode);
+				SendFragment(episode, action, manifestUrl);
 		}
 	}
 	else
@@ -64,12 +64,15 @@ void StreamingServerConnection::ProcessRequest()
 	WriteResponse();
 }
 
-void StreamingServerConnection::PrepareManifest(std::string basePath, std::string manifestUrl)
+void StreamingServerConnection::SendManifest(std::string episodeId, std::string manifestUrl)
 {
-	std::string manifestPath = basePath + "manifest.ismc";
+	SmoothStreaming smoothStreaming = SmoothStreaming::GetInstance();
+	std::string clientManifest = smoothStreaming.GetClientManifest(episodeId);
 
-	if (!boost::filesystem::exists(manifestPath))
+	if (clientManifest.empty())
 	{
+		BOOST_LOG_TRIVIAL(debug) << "Client manifest not found locally, fetching from server...";
+
 		try
 		{
 			auto response = httpClient_->Get(manifestUrl);
@@ -81,17 +84,10 @@ void StreamingServerConnection::PrepareManifest(std::string basePath, std::strin
 		}
 	}
 	else
-	{
-		std::ifstream fileStream(manifestPath, std::ios::binary);
-		std::vector<char> fileBytes((std::istreambuf_iterator<char>(fileStream)),
-		                            std::istreambuf_iterator<char>());
-
-		ostream(response_.body()) << std::string(fileBytes.begin(), fileBytes.end());
-	}
+		ostream(response_.body()) << clientManifest;
 }
 
-void StreamingServerConnection::PrepareSegment(std::string basePath, std::string manifestUrl, std::string action,
-                                               std::string episode)
+void StreamingServerConnection::SendFragment(std::string episode, std::string action, std::string manifestUrl)
 {
 	boost::regex pattern("QualityLevels\\((.*)\\)/Fragments\\((.*)=(.*)\\)");
 	boost::smatch match;
@@ -104,25 +100,17 @@ void StreamingServerConnection::PrepareSegment(std::string basePath, std::string
 		std::string type = match.str(2);
 		std::string starttime = match.str(3);
 
-		std::string typechar;
-		bool isCaptions = false;
 		int captions_res = type.find("_captions");
+		bool isCaptions = captions_res != std::string::npos;
 
-		if (type == "video")
-			typechar = "v";
-		else if (captions_res != std::string::npos)
+		auto smoothStreaming = SmoothStreaming::GetInstance();
+		auto responseBytes = smoothStreaming.GetFragment(episode, type, std::stoll(bitrate), std::stoll(starttime));
+
+		if (responseBytes.empty())
 		{
-			isCaptions = true;
-			typechar = "t";
-		}
-		else
-			typechar = "a";
+			BOOST_LOG_TRIVIAL(debug) << "Fragment " << starttime << " from track " << type << " for episode " << episode
+ << " not found locally, fetching from server...";
 
-		std::string chunkPath = basePath + type + "\\" + starttime + ".ism" + typechar;
-		std::string responseBytes;
-
-		if (!boost::filesystem::exists(chunkPath))
-		{
 			boost::system::result<boost::url_view> urlView(manifestUrl);
 			std::string fragmentUrl = urlView.value().scheme();
 			fragmentUrl += "://" + urlView.value().host();
@@ -141,23 +129,55 @@ void StreamingServerConnection::PrepareSegment(std::string basePath, std::string
 			{
 				response_.result(http::status::internal_server_error);
 			}
-		}
-		else
-		{
-			std::ifstream fileStream(chunkPath, std::ios::binary);
-			std::vector<char> fileBytes((std::istreambuf_iterator<char>(fileStream)),
-			                            std::istreambuf_iterator<char>());
-			responseBytes = std::string(fileBytes.begin(), fileBytes.end());
+
+			if (isCaptions)
+			{
+				auto responseBytesData = new char[responseBytes.size()];
+				memcpy(responseBytesData, responseBytes.data(), responseBytes.size());
+
+				unsigned int moofSize;
+				memcpy(&moofSize, responseBytesData, 4);
+				moofSize = _byteswap_ulong(moofSize);
+
+				auto moof = new char[moofSize];
+				memcpy(moof, responseBytesData, moofSize);
+
+				unsigned int mdatSize;
+				memcpy(&mdatSize, responseBytesData + moofSize, 4);
+				mdatSize = _byteswap_ulong(mdatSize);
+
+				auto mdat = new char[mdatSize];
+				memcpy(mdat, responseBytesData + moofSize, mdatSize);
+
+				delete[] responseBytesData;
+
+				// Skip 8 bytes and read it as a string
+				std::string mdatString(mdat + 8, mdatSize - 8);
+
+				auto subtitleOverride = SubtitleOverride::GetInstance();
+				auto newString = subtitleOverride.GetSubtitleOverride(episode, type, mdatString);
+
+				// Update the mdat size
+				mdatSize = newString.size() + 8;
+
+				// Update the mdat
+				delete[] mdat;
+				mdat = new char[mdatSize];
+
+				// Write mdatSize in big-endian
+				unsigned int mdatSizeBE = _byteswap_ulong(mdatSize);
+				memcpy(mdat, &mdatSizeBE, 4);
+				memcpy(mdat + 4, "mdat", 4);
+				memcpy(mdat + 8, newString.c_str(), newString.size());
+
+				responseBytes = std::string(moof, moofSize) + std::string(mdat, mdatSize);
+
+				delete[] moof;
+				delete[] mdat;
+			}
 		}
 
-		if (isCaptions)
-		{
-			auto subtitles = SubtitleOverride::GetInstance();
-			std::string subtitleBytes = subtitles.GetSubtitleOverride(episode, type, responseBytes);
-			ostream(response_.body()) << subtitleBytes;
-		}
-		else
-			ostream(response_.body()) << responseBytes;
+		ostream(response_.body()) << responseBytes;
 	}
 }
 

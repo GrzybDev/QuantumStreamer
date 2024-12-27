@@ -14,6 +14,7 @@
 #include "StreamingServerSocket.hpp"
 #include "StreamingServerConnection.hpp"
 #include "HttpClient.hpp"
+#include "SmoothStreaming.hpp"
 #include "VideoList.hpp"
 #include "SubtitleOverride.hpp"
 

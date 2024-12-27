@@ -26,7 +26,7 @@ private:
 
 	void ReadRequest();
 	void ProcessRequest();
-	void PrepareManifest(std::string basePath, std::string manifestUrl);
-	void PrepareSegment(std::string basePath, std::string manifestUrl, std::string action, std::string episode);
+	void SendManifest(std::string episodeId, std::string manifestUrl);
+	void SendFragment(std::string episode, std::string action, std::string manifestUrl);
 	void WriteResponse();
 };

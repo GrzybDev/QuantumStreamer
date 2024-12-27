@@ -22,6 +22,7 @@ StreamingServer::StreamingServer()
 	BOOST_LOG_TRIVIAL(info) << "Initializing...";
 
 	VideoList::GetInstance(); // Preload the video list
+	SmoothStreaming::GetInstance(); // Preload the smooth streaming data
 	SubtitleOverride::GetInstance(); // Preload the subtitle overrides for all episodes
 
 	// Create an io_service object for asynchronous I/O
