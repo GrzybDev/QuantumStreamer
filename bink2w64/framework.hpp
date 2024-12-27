@@ -2,7 +2,7 @@
 
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 
-#define DEFAULT_HTTP_PORT 1337
+#define DEFAULT_HTTP_PORT 10000
 
 // Windows Header Files
 #include <windows.h>
