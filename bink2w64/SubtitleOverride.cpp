@@ -1,4 +1,4 @@
-#include "pch.hpp"
+﻿#include "pch.hpp"
 
 SubtitleOverride::SubtitleOverride()
 {
@@ -6,7 +6,7 @@ SubtitleOverride::SubtitleOverride()
 	BOOST_LOG_TRIVIAL(info) << "Loading subtitle overrides...";
 
 	BOOST_LOG_TRIVIAL(debug) << "Closed captioning is " << (config_->cfg->subtitlesClosedCaptioning ? "enabled" : "disabled");
-
+	BOOST_LOG_TRIVIAL(debug) << "Music notes will be " << (config_->cfg->subtitlesMusicNotes ? "visible" : "removed") << " in subtitles";
 
 	const auto& videoList = VideoList::GetInstance();
 
@@ -107,6 +107,16 @@ std::string SubtitleOverride::GetSubtitleOverride(std::string episode, std::stri
 									BOOST_LOG_TRIVIAL(debug) << "Removed closed captioning from subtitle: " << episode << ":" << subtitleName;
 
 								overrideText = regex_replace(overrideText, ccRegex, "");
+							}
+
+							if (!config_->cfg->subtitlesMusicNotes)
+							{
+								boost::regex musicNoteRegex(R"(\xE2\x99\xAA)");
+
+								if (regex_search(overrideText, musicNoteRegex))
+									BOOST_LOG_TRIVIAL(debug) << "Removed music note(s) from subtitle: " << episode << ":" << subtitleName;
+
+								overrideText = regex_replace(overrideText, musicNoteRegex, "");
 							}
 
 							p.child("span").text().set(overrideText.c_str());
