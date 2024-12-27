@@ -6,16 +6,6 @@ using tcp = ip::tcp; // from <boost/asio.hpp>
 
 StreamingServer::StreamingServer()
 {
-	enableConsole = boost::filesystem::exists("debugConsole");
-	enableLogFile = boost::filesystem::exists("debugLogFile");
-
-	if (boost::filesystem::exists("streamingPort"))
-	{
-		std::ifstream fileStream("streamingPort");
-		fileStream >> streamingPort;
-		fileStream.close();
-	}
-
 	InitLogging();
 
 	BOOST_LOG_FUNCTION()
@@ -29,7 +19,7 @@ StreamingServer::StreamingServer()
 	boost::asio::io_service ioService;
 	const auto httpClient = std::make_shared<HttpClient>(ioService);
 
-	new StreamingServerSocket(ioService, streamingPort, httpClient);
+	new StreamingServerSocket(ioService, config_->cfg->serverPort, httpClient);
 
 	BOOST_LOG_TRIVIAL(info) << "Finished initialization, ready for receiving incoming connections!";
 
@@ -41,6 +31,12 @@ VOID StreamingServer::InitLogging() const
 	using namespace std;
 	namespace logging = boost::log;
 	namespace expr = logging::expressions;
+
+	// Get the configuration settings for logging
+	const bool enableConsole = config_->cfg->debugConsole;
+	const bool enableLogFile = config_->cfg->debugLogFile;
+	int consoleLogLevel = config_->cfg->debugConsoleLogLevel;
+	int fileLogLevel = config_->cfg->debugLogFileLevel;
 
 	// Add common attributes for logging
 	logging::add_common_attributes();
@@ -74,10 +70,10 @@ VOID StreamingServer::InitLogging() const
 		// Redirect wide standard error, output to console
 		// std::wcout, std::wclog, std::wcerr, std::wcin
 		const HANDLE hConOut = CreateFile(_T("CONOUT$"), GENERIC_READ | GENERIC_WRITE,
-		                                  FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING,
-		                                  FILE_ATTRIBUTE_NORMAL, nullptr);
+			FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING,
+			FILE_ATTRIBUTE_NORMAL, nullptr);
 		const HANDLE hConIn = CreateFile(_T("CONIN$"), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE,
-		                                 nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+			nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
 		SetStdHandle(STD_OUTPUT_HANDLE, hConOut);
 		SetStdHandle(STD_ERROR_HANDLE, hConOut);
@@ -90,7 +86,7 @@ VOID StreamingServer::InitLogging() const
 
 		// Set the filter and format for the console log
 		const auto consoleSink = logging::add_console_log(std::cout);
-		consoleSink->set_filter(logging::trivial::severity >= boost::log::trivial::debug);
+		consoleSink->set_filter(logging::trivial::severity >= consoleLogLevel);
 		consoleSink->set_formatter(logFormat);
 
 		// Print the intro messages
@@ -98,25 +94,18 @@ VOID StreamingServer::InitLogging() const
 		Utils::CenterPrint("Homepage: https://grzyb.dev/project/pl_quantumbreak", ' ', false);
 		Utils::CenterPrint("Source code: https://github.com/GrzybDev/QuantumStreamer", ' ', false);
 		Utils::CenterPrint("Noticed a bug? Fill a bug report here: https://github.com/GrzybDev/QuantumStreamer/issues",
-		                   ' ',
-		                   false);
+			' ',
+			false);
 		Utils::CenterPrint("Licensed under GNU Lesser General Public License v3, Contributions of any kind welcome!",
-		                   ' ', true);
+			' ', true);
 		Utils::CenterPrint("", '=', true);
 	}
 
 	if (enableLogFile)
 	{
-		const boost::posix_time::ptime timeLocal = boost::posix_time::second_clock::local_time();
-		const auto facet = new boost::posix_time::time_facet("%Y-%m-%d_%H-%M-%S");
-
-		std::ostringstream is;
-		is.imbue(std::locale(is.getloc(), facet));
-		is << timeLocal;
-
 		// Set the filter and format for the file log
-		const auto fileSink = logging::add_file_log((boost::format("qb_%1%.log") % is.str()).str());
-		fileSink->set_filter(logging::trivial::severity >= boost::log::trivial::debug);
+		const auto fileSink = logging::add_file_log(config_->cfg->debugLogPath);
+		fileSink->set_filter(logging::trivial::severity >= fileLogLevel);
 		fileSink->set_formatter(logFormat);
 	}
 }

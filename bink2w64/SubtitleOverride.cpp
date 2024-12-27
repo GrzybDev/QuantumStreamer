@@ -5,9 +5,8 @@ SubtitleOverride::SubtitleOverride()
 	BOOST_LOG_FUNCTION();
 	BOOST_LOG_TRIVIAL(info) << "Loading subtitle overrides...";
 
-	enableCC = boost::filesystem::exists("enableCC");
+	BOOST_LOG_TRIVIAL(debug) << "Closed captioning is " << (config_->cfg->subtitlesClosedCaptioning ? "enabled" : "disabled");
 
-	BOOST_LOG_TRIVIAL(debug) << "Closed captioning is " << (enableCC ? "enabled" : "disabled");
 
 	const auto& videoList = VideoList::GetInstance();
 
@@ -101,7 +100,7 @@ std::string SubtitleOverride::GetSubtitleOverride(std::string episode, std::stri
 
 							std::string overrideText = subtitleOverrides[episode][subtitleName][subtitle_id];
 
-							if (!enableCC)
+							if (!config_->cfg->subtitlesClosedCaptioning)
 							{
 								boost::regex ccRegex("[ -]*\\[ .* \\]");
 

@@ -20,9 +20,7 @@ public:
 	}
 
 private:
-	BOOL enableConsole = FALSE;
-	BOOL enableLogFile = FALSE;
-	USHORT streamingPort = DEFAULT_HTTP_PORT;
+	Config* config_ = &Config::GetInstance();
 
 	VOID InitLogging() const;
 };
