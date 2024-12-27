@@ -9,6 +9,7 @@ Table of Contents
 - [Build Requirements](#build-requirements)
 - [Compiling](#compiling)
 - [Installing](#installing)
+- [Configuration](#configuration)
 - [Credits](#credits)
 
 Game Info
@@ -53,6 +54,23 @@ Installing
 ----------
 
 Copy all `dll` files from either the latest build in [GitHub Releases](https://github.com/GrzybDev/QuantumStreamer/releases) or from `Release` folder if you compiled it yourself to the game root folder (where `exe` file is located)
+
+Configuration
+-------------
+
+You can change the default behavior of the hook by creating JSON config named `streamer.json` in the game root folder
+
+| Key                          | Description                                                                      | Allowed Values                 | Default Value                                                                                                                                      |
+|------------------------------|----------------------------------------------------------------------------------|--------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
+| server.port                  | Port for HTTP server (game also have to point to this port)                      | Unsigned short (Range 0-65535) | 10000                                                                                                                                              |
+| debug.showConsole            | Shows hook debug console                                                         | Boolean (true/false)           | false                                                                                                                                              |
+| debug.createLog              | Create hook log file                                                             | Boolean (true/false)           | false                                                                                                                                              |
+| debug.logPath                | Path to where save log file                                                      | Any string                     | QuantumStreamer(current date and time).log                                                                                                         |
+| debug.logLevelConsole        | Changes how detailed console logging is                                          | Integer (Range 0-5)            | 2                                                                                                                                                  |
+| debug.logLevelFile           | Changes how detailed file logging is                                             | Integer (Range 0-5)            | 1                                                                                                                                                  |
+| subtitles.closedCaptioning   | If false, remove closed captions from subtitles                                  | Boolean (true/false)           | true                                                                                                                                               |
+| subtitles.musicNotes         | If false, remove music notes from subtitles                                      | Boolean (true/false)           | true                                                                                                                                               |
+
 
 Credits
 -------
