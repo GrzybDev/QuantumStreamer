@@ -92,6 +92,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Config.hpp" />
     <ClInclude Include="ExitCode.hpp" />
     <ClInclude Include="framework.hpp" />
     <ClInclude Include="HttpClient.hpp" />
@@ -105,6 +106,7 @@
     <ClInclude Include="VideoList.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Config.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="HttpClient.cpp" />
     <ClCompile Include="pch.cpp">

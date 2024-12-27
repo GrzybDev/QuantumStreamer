@@ -54,6 +54,9 @@
     <ClInclude Include="SmoothStreaming.hpp">
       <Filter>Header Files\Server</Filter>
     </ClInclude>
+    <ClInclude Include="Config.hpp">
+      <Filter>Header Files\Server</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -84,6 +87,9 @@
       <Filter>Source Files\Server</Filter>
     </ClCompile>
     <ClCompile Include="SmoothStreaming.cpp">
+      <Filter>Source Files\Server</Filter>
+    </ClCompile>
+    <ClCompile Include="Config.cpp">
       <Filter>Source Files\Server</Filter>
     </ClCompile>
   </ItemGroup>

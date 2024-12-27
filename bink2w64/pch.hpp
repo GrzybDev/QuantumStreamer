@@ -9,6 +9,7 @@
 
 // add headers that you want to pre-compile here
 #include "framework.hpp"
+#include "Config.hpp"
 #include "ExitCode.hpp"
 #include "Utils.hpp"
 #include "StreamingServerSocket.hpp"
