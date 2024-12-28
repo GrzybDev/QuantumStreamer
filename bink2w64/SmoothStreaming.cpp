@@ -306,7 +306,17 @@ std::string SmoothStreaming::GetFragment(std::string episodeId, std::string trac
 					unsigned int moofSize;
 					fileStream.read(reinterpret_cast<char*>(&moofSize), 4);
 					moofSize = _byteswap_ulong(moofSize);
-					fileStream.seekg(-4, std::ios::cur);
+
+					std::string moofMagic(4, '\0');
+					fileStream.read(&moofMagic[0], 4);
+
+					if (moofMagic != "moof")
+					{
+						BOOST_LOG_TRIVIAL(error) << "Invalid moof magic, expected: moof, got: " << moofMagic << ". Skipping.";
+						return "";
+					}
+
+					fileStream.seekg(-8, std::ios::cur);
 
 					auto moof = new char[moofSize];
 					fileStream.read(moof, moofSize);
@@ -316,7 +326,17 @@ std::string SmoothStreaming::GetFragment(std::string episodeId, std::string trac
 					unsigned int mdatSize;
 					fileStream.read(reinterpret_cast<char*>(&mdatSize), 4);
 					mdatSize = _byteswap_ulong(mdatSize);
-					fileStream.seekg(-4, std::ios::cur);
+
+					std::string mdatMagic(4, '\0');
+					fileStream.read(&mdatMagic[0], 4);
+
+					if (mdatMagic != "mdat")
+					{
+						BOOST_LOG_TRIVIAL(error) << "Invalid mdat magic, expected: mdat, got: " << mdatMagic << ". Skipping.";
+						return "";
+					}
+
+					fileStream.seekg(-8, std::ios::cur);
 
 					auto mdat = new char[mdatSize];
 					fileStream.read(mdat, mdatSize);
