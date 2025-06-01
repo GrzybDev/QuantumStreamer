@@ -4,6 +4,7 @@
 
 // Standard C++ Header Files
 #include <iostream>
+#include <fstream>
 
 // Windows Header Files
 #include <windows.h>

@@ -64,6 +64,7 @@
     <ClInclude Include="pch.hpp" />
     <ClInclude Include="RequestHandlerFactory.hpp" />
     <ClInclude Include="StreamingServer.hpp" />
+    <ClInclude Include="VideoList.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
@@ -73,6 +74,7 @@
     </ClCompile>
     <ClCompile Include="RequestHandlerFactory.cpp" />
     <ClCompile Include="StreamingServer.cpp" />
+    <ClCompile Include="VideoList.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="dllproxy.def" />

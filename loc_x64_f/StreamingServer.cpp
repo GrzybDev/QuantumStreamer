@@ -1,6 +1,7 @@
 #include "pch.hpp"
 #include "StreamingServer.hpp"
 #include "RequestHandlerFactory.hpp"
+#include "VideoList.hpp"
 
 using Poco::AutoPtr;
 using Poco::ConsoleChannel;
@@ -27,6 +28,8 @@ VOID StreamingServer::initialize(Application& self)
 	self.logger().notice("Source code: https://github.com/GrzybDev/QuantumStreamer");
 	self.logger().notice("Noticed a bug? Fill a bug report here: https://github.com/GrzybDev/QuantumStreamer/issues");
 	self.logger().notice("Licensed under GNU Lesser General Public License v3, Contributions of any kind welcome!");
+
+	addSubsystem(new VideoList);
 
 	ServerApplication::initialize(self);
 }
