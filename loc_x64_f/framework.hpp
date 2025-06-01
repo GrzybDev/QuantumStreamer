@@ -5,6 +5,7 @@
 // Standard C++ Header Files
 #include <iostream>
 #include <fstream>
+#include <regex>
 
 // Windows Header Files
 #include <windows.h>
@@ -18,6 +19,11 @@
 #include <Poco/Logger.h>
 #include <Poco/PatternFormatter.h>
 #include <Poco/SplitterChannel.h>
+#include <Poco/StreamCopier.h>
+#include <Poco/URI.h>
+#include <Poco/JSON/Object.h>
+#include <Poco/JSON/Parser.h>
+#include "Poco/Net/HTTPClientSession.h"
 #include "Poco/Net/HTTPServer.h"
 #include "Poco/Net/HTTPServerRequest.h"
 #include "Poco/Net/HTTPServerResponse.h"
