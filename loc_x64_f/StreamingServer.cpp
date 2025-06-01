@@ -127,6 +127,7 @@ INT StreamingServer::main(const std::vector<std::string>& args)
 	ThreadPool::defaultPool().addCapacity(maxThreads);
 
 	auto pParams = new HTTPServerParams;
+	pParams->setKeepAlive(false);
 	pParams->setMaxQueued(maxQueued);
 	pParams->setMaxThreads(maxThreads);
 	logger.debug("Max Queued: %d", maxQueued);
