@@ -1,0 +1,25 @@
+LIBRARY "loc_x64_f.dll"
+EXPORTS
+    ??0StringTable@loc@@QEAA@AEBV01@@Z=StringTable_CopyCtor
+    ??0StringTable@loc@@QEAA@XZ=StringTable_DefaultCtor
+    ??1StringTable@loc@@QEAA@XZ=StringTable_Dtor
+    ??4StringTable@loc@@QEAAAEAV01@AEBV01@@Z=StringTable_assign
+    ??4WordWrap@@QEAAAEAV0@$$QEAV0@@Z=WordWrap_MoveAssign
+    ??4WordWrap@@QEAAAEAV0@AEBV0@@Z=WordWrap_CopyAssign
+    ?CanBreakLineAt@WordWrap@@SA_NPEB_W0@Z=CanBreakLineAt
+    ?FindNextLine@WordWrap@@SAPEB_WPEB_WIPEAPEB_W@Z=FindNextLine
+    ?IsWhiteSpace@WordWrap@@SA_NPEB_W@Z=IsWhiteSpace
+    ?SetCallback@WordWrap@@SAXP6AI_W@ZP6AIXZ@Z=SetCallback
+    ?addStringTable@StringTable@loc@@QEAAXAEAVDocument@xml@@@Z=addStringTable
+    ?convertToWString@StringTable@loc@@SAXAEBV?$InplaceString@$0IA@@r@@AEAV?$InplaceWString@$0IA@@4@@Z=convertToWString
+    ?convertToWString_External@StringTable@loc@@SAXAEBV?$InplaceString@$0IA@@r@@AEAV?$InplaceWString@$0IA@@4@@Z=convertToWString_External
+    ?fillCodeLocaleTable@StringTable@loc@@KAXXZ=fillCodeLocaleTable
+    ?fixString@StringTable@loc@@QEAAXAEAPEB_WPEBD@Z=fixString
+    ?getInstance@StringTable@loc@@SAPEAV12@XZ=getInstance
+    ?getStringById@StringTable@loc@@QEAAPEB_WPEBD0@Z=getStringById
+    ?load@StringTable@loc@@QEAA_NPEAVFileProvider@12@@Z=load
+    ?loadFromBinary@StringTable@loc@@SA_NPEBDAEAV?$PseudoMap@V?$InplaceString@$0IA@@r@@V?$InplaceWString@$0IA@@2@@r@@PEAVFileProvider@12@@Z=loadFromBinary
+    ?loadFromXML_RMD_Format@StringTable@loc@@SA_NPEBDAEAV?$PseudoMap@V?$InplaceString@$0IA@@r@@V?$InplaceWString@$0IA@@2@@r@@@Z=loadFromXML_RMD_Format
+    ?loadFromXml_RMD_Format@StringTable@loc@@SA_NAEAVDocument@xml@@PEBDAEAV?$PseudoMap@V?$InplaceString@$0IA@@r@@V?$InplaceWString@$0IA@@2@@r@@@Z=loadFromXml_RMD_Format
+    ?sm_codeLocaleDictionary@StringTable@loc@@1V?$map@V?$InplaceString@$0IA@@r@@V?$map@V?$InplaceString@$0IA@@r@@V?$InplaceWString@$0IA@@2@U?$less@V?$InplaceString@$0IA@@r@@@std@@V?$Allocator@V?$InplaceWString@$0IA@@r@@@2@@std@@U?$less@V?$InplaceString@$0IA@@r@@@4@V?$Allocator@V?$map@V?$InplaceString@$0IA@@r@@V?$InplaceWString@$0IA@@2@U?$less@V?$InplaceString@$0IA@@r@@@std@@V?$Allocator@V?$InplaceWString@$0IA@@r@@@2@@std@@@2@@std@@A=sm_codeLocaleDictionary
+    ?sm_pInstance@StringTable@loc@@1PEAV12@EA=sm_pInstance
