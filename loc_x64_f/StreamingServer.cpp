@@ -69,12 +69,14 @@ VOID StreamingServer::initLoggers()
 
 	int logLevel_Hook = config().getInt("Logger.LogLevel_Hook", Message::PRIO_FATAL);
 	int logLevel_Server = config().getInt("Logger.LogLevel_Server", Message::PRIO_INFORMATION);
+	int logLevel_HTTP = config().getInt("Logger.LogLevel_HTTP", Message::PRIO_FATAL);
 
 	Logger& hookLogger = Logger::get("Hook");
 	hookLogger.setChannel(pFormattingChannel);
 	hookLogger.setLevel(logLevel_Hook);
 
 	Logger& serverLogger = Logger::create("Server", pFormattingChannel, logLevel_Server);
+	Logger& httpLogger = Logger::create("HTTP", pFormattingChannel, logLevel_HTTP);
 }
 
 
