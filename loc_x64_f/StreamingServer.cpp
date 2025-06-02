@@ -1,6 +1,7 @@
 #include "pch.hpp"
 #include "StreamingServer.hpp"
 #include "RequestHandlerFactory.hpp"
+#include "SubtitleOverride.hpp"
 #include "VideoList.hpp"
 
 using Poco::AutoPtr;
@@ -30,6 +31,7 @@ VOID StreamingServer::initialize(Application& self)
 	self.logger().notice("Licensed under GNU Lesser General Public License v3, Contributions of any kind welcome!");
 
 	addSubsystem(new VideoList);
+	addSubsystem(new SubtitleOverride);
 
 	ServerApplication::initialize(self);
 }
