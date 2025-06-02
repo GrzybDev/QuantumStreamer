@@ -47,9 +47,6 @@ void VideoList::initialize(Application& app)
 
 void VideoList::uninitialize()
 {
-	Logger& logger = Logger::get("Server");
-	logger.debug("Uninitializing %s...", name());
-
 	videoList->clear();
 }
 
