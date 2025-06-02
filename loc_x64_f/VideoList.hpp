@@ -13,6 +13,7 @@ class VideoList : public Poco::Util::Subsystem
 public:
 	const char* name() const override;
 
+	std::vector<std::string> getEpisodeList();
 	std::string getManifestUrl(std::string episodeId);
 	std::string getFragmentUrl(std::string episodeId, std::string bitrate, std::string type, std::string startTime);
 

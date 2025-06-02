@@ -50,6 +50,13 @@ void VideoList::uninitialize()
 	videoList->clear();
 }
 
+std::vector<std::string> VideoList::getEpisodeList()
+{
+	std::vector<std::string> episodes;
+	videoList->getNames(episodes);
+	return episodes;
+}
+
 std::string VideoList::getManifestUrl(std::string episodeId)
 {
 	if (!videoList->has(episodeId))
