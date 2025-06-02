@@ -3,6 +3,7 @@
 
 #include "FragmentRequestHandler.hpp"
 #include "ManifestRequestHandler.hpp"
+#include "SubtitleFragmentRequestHandler.hpp"
 
 Poco::Net::HTTPRequestHandler* RequestHandlerFactory::createRequestHandler(const Poco::Net::HTTPServerRequest& request)
 {
@@ -33,7 +34,7 @@ Poco::Net::HTTPRequestHandler* RequestHandlerFactory::createRequestHandler(const
 			std::string langCode = match[3].str();
 			std::string startTime = match[4].str();
 
-			return new FragmentRequestHandler(episodeId, qualityLevel, langCode + "_captions", startTime);
+			return new SubtitleFragmentRequestHandler(episodeId, qualityLevel, langCode, startTime);
 		}
 
 		if (std::regex_match(uri, match, fragmentUrlPattern))

@@ -66,6 +66,7 @@
     <ClInclude Include="pch.hpp" />
     <ClInclude Include="RequestHandlerFactory.hpp" />
     <ClInclude Include="StreamingServer.hpp" />
+    <ClInclude Include="SubtitleFragmentRequestHandler.hpp" />
     <ClInclude Include="SubtitleOverride.hpp" />
     <ClInclude Include="VideoList.hpp" />
   </ItemGroup>
@@ -79,6 +80,7 @@
     </ClCompile>
     <ClCompile Include="RequestHandlerFactory.cpp" />
     <ClCompile Include="StreamingServer.cpp" />
+    <ClCompile Include="SubtitleFragmentRequestHandler.cpp" />
     <ClCompile Include="SubtitleOverride.cpp" />
     <ClCompile Include="VideoList.cpp" />
   </ItemGroup>
