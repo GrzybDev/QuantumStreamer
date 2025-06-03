@@ -16,7 +16,7 @@ void VideoList::initialize(Application& app)
 {
 	Logger& logger = Logger::get("Server");
 
-	std::string videoListPath = app.config().getString("Server.VideoListPath", "data/videoList_original.rmdj");
+	std::string videoListPath = app.config().getString("Server.VideoListPath", "./data/videoList_original.rmdj");
 	logger.debug("Loading video list (from %s)...", videoListPath);
 
 	std::ifstream videoListStream(videoListPath, std::ios::binary);
