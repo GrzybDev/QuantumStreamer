@@ -1,5 +1,7 @@
 #include "pch.hpp"
 #include "StreamingServer.hpp"
+
+#include "OfflineStreaming.hpp"
 #include "RequestHandlerFactory.hpp"
 #include "SubtitleOverride.hpp"
 #include "VideoList.hpp"
@@ -32,6 +34,7 @@ VOID StreamingServer::initialize(Application& self)
 
 	addSubsystem(new VideoList);
 	addSubsystem(new SubtitleOverride);
+	addSubsystem(new OfflineStreaming);
 
 	ServerApplication::initialize(self);
 }
