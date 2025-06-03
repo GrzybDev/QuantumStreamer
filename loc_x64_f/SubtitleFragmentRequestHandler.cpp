@@ -1,6 +1,7 @@
 #include "pch.hpp"
 #include "SubtitleFragmentRequestHandler.hpp"
 
+#include "OfflineStreaming.hpp"
 #include "SubtitleOverride.hpp"
 #include "VideoList.hpp"
 
@@ -31,52 +32,66 @@ void SubtitleFragmentRequestHandler::handleRequest(Poco::Net::HTTPServerRequest&
 		return;
 	}
 
-	// Call the manifest URL keeping all headers, query parameters, and body intact
-	// The only thing we need to change is the Host header to the manifest URL's host
+	OfflineStreaming& offlineStreaming = app.getSubsystem<OfflineStreaming>();
+	std::string localFragment = offlineStreaming.GetLocalFragment(_episodeId, _langCode + "_captions", _bitrate, _startTime);
 
-	// Parse manifest URL to extract the host
-	Poco::URI uri(manifestUrl);
-	std::string manifestHost = uri.getHost();
-
-	Poco::Net::HTTPRequest manifestRequest(Poco::Net::HTTPRequest::HTTP_GET, manifestUrl,
-	                                       Poco::Net::HTTPMessage::HTTP_1_1);
-	// Copy headers from the original request to the manifest request
-	for (const auto& header : request)
+	if (localFragment.empty())
 	{
-		if (header.first != "Host")
+		// Call the manifest URL keeping all headers, query parameters, and body intact
+		// The only thing we need to change is the Host header to the manifest URL's host
+
+		// Parse manifest URL to extract the host
+		Poco::URI uri(manifestUrl);
+		std::string manifestHost = uri.getHost();
+
+		Poco::Net::HTTPRequest manifestRequest(Poco::Net::HTTPRequest::HTTP_GET, manifestUrl,
+			Poco::Net::HTTPMessage::HTTP_1_1);
+		// Copy headers from the original request to the manifest request
+		for (const auto& header : request)
 		{
-			// Skip Host header, we'll set it later
-			manifestRequest.set(header.first, header.second);
+			if (header.first != "Host")
+			{
+				// Skip Host header, we'll set it later
+				manifestRequest.set(header.first, header.second);
+			}
 		}
+		// Set the Host header to the manifest URL's host
+		manifestRequest.set("Host", manifestHost);
+
+		// Send the request to the manifest URL
+		Poco::Net::HTTPClientSession session(uri.getHost(), uri.getPort());
+		session.setTimeout(Poco::Timespan(10, 0)); // Set a timeout for the request
+
+		// Send the request and get the response
+		std::ostream& manifestRequestStream = session.sendRequest(manifestRequest);
+
+		Poco::Net::HTTPResponse manifestResponse;
+		std::istream& manifestResponseStream = session.receiveResponse(manifestResponse);
+
+		std::ostringstream buffer;
+		Poco::StreamCopier::copyStream(manifestResponseStream, buffer);
+		std::string bodyStr = buffer.str();
+		std::string bodyStrNew = processSubtitleData(bodyStr);
+
+		response.setStatus(manifestResponse.getStatus());
+
+		for (const auto& header : manifestResponse)
+			response.set(header.first, header.second);
+
+		// Calculate Content-Length
+		response.setContentLength(bodyStrNew.size());
+
+		std::ostream& responseBody = response.send();
+		responseBody.write(bodyStrNew.data(), bodyStrNew.size());
 	}
-	// Set the Host header to the manifest URL's host
-	manifestRequest.set("Host", manifestHost);
+	else
+	{
+		std::string newLocalFragment = processSubtitleData(localFragment);
+		response.setContentLength(newLocalFragment.size());
 
-	// Send the request to the manifest URL
-	Poco::Net::HTTPClientSession session(uri.getHost(), uri.getPort());
-	session.setTimeout(Poco::Timespan(10, 0)); // Set a timeout for the request
-
-	// Send the request and get the response
-	std::ostream& manifestRequestStream = session.sendRequest(manifestRequest);
-
-	Poco::Net::HTTPResponse manifestResponse;
-	std::istream& manifestResponseStream = session.receiveResponse(manifestResponse);
-
-	std::ostringstream buffer;
-	Poco::StreamCopier::copyStream(manifestResponseStream, buffer);
-	std::string bodyStr = buffer.str();
-	std::string bodyStrNew = processSubtitleData(bodyStr);
-
-	response.setStatus(manifestResponse.getStatus());
-
-	for (const auto& header : manifestResponse)
-		response.set(header.first, header.second);
-
-	// Calculate Content-Length
-	response.setContentLength(bodyStrNew.size());
-
-	std::ostream& responseBody = response.send();
-	responseBody.write(bodyStrNew.data(), bodyStrNew.size());
+		std::ostream& responseBody = response.send();
+		responseBody.write(newLocalFragment.data(), newLocalFragment.size());
+	}
 }
 
 std::string SubtitleFragmentRequestHandler::processSubtitleData(std::string& data)
