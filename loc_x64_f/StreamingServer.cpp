@@ -15,10 +15,10 @@ using Poco::Message;
 using Poco::PatternFormatter;
 using Poco::SplitterChannel;
 using Poco::ThreadPool;
-
 using Poco::Net::ServerSocket;
 using Poco::Net::HTTPServer;
 using Poco::Net::HTTPServerParams;
+using Poco::Util::Application;
 
 
 VOID StreamingServer::initialize(Application& self)
@@ -44,19 +44,19 @@ VOID StreamingServer::uninitialize()
 	ServerApplication::uninitialize();
 }
 
-VOID StreamingServer::initLoggers()
+VOID StreamingServer::initLoggers() const
 {
-	bool showConsole = config().getBool("Logger.ShowConsole", false);
-	bool saveToLogFile = config().getBool("Logger.SaveToLogFile", false);
+	const bool showConsole = config().getBool("Logger.ShowConsole", false);
+	const bool saveToLogFile = config().getBool("Logger.SaveToLogFile", false);
 
 	if (showConsole)
 		createConsole();
 
 	// Create channels
-	AutoPtr pConsoleChannel = new ConsoleChannel;
+	const AutoPtr pConsoleChannel = new ConsoleChannel;
 	AutoPtr pFileChannel = new FileChannel;
 
-	std::string logFile = config().getString("Logger.LogFile", "QuantumStreamer.log");
+	const std::string logFile = config().getString("Logger.LogFile", "QuantumStreamer.log");
 	pFileChannel->setProperty("path", logFile);
 	pFileChannel->setProperty("rotateOnOpen", "true");
 	pFileChannel->setProperty("archive", "timestamp"); // archive with timestamp
@@ -70,21 +70,21 @@ VOID StreamingServer::initLoggers()
 		pSplitterChannel->addChannel(pFileChannel);
 
 	// Create a PatternFormatter with your format
-	AutoPtr pFormatter = new PatternFormatter("[%Y-%m-%d %H:%M:%S.%i][%p][%s] %t");
+	const AutoPtr pFormatter = new PatternFormatter("[%Y-%m-%d %H:%M:%S.%i][%p][%s] %t");
 
 	// Create a FormattingChannel that wraps ConsoleChannel
-	AutoPtr pFormattingChannel = new FormattingChannel(pFormatter, pSplitterChannel);
+	const AutoPtr pFormattingChannel = new FormattingChannel(pFormatter, pSplitterChannel);
 
-	int logLevel_Hook = config().getInt("Logger.LogLevel_Hook", Message::PRIO_FATAL);
-	int logLevel_Server = config().getInt("Logger.LogLevel_Server", Message::PRIO_INFORMATION);
-	int logLevel_HTTP = config().getInt("Logger.LogLevel_HTTP", Message::PRIO_FATAL);
+	const int logLevel_Hook = config().getInt("Logger.LogLevel_Hook", Message::PRIO_FATAL);
+	const int logLevel_Server = config().getInt("Logger.LogLevel_Server", Message::PRIO_INFORMATION);
+	const int logLevel_HTTP = config().getInt("Logger.LogLevel_HTTP", Message::PRIO_FATAL);
 
 	Logger& hookLogger = Logger::get("Hook");
 	hookLogger.setChannel(pFormattingChannel);
 	hookLogger.setLevel(logLevel_Hook);
 
-	Logger& serverLogger = Logger::create("Server", pFormattingChannel, logLevel_Server);
-	Logger& httpLogger = Logger::create("HTTP", pFormattingChannel, logLevel_HTTP);
+	Logger::create("Server", pFormattingChannel, logLevel_Server);
+	Logger::create("HTTP", pFormattingChannel, logLevel_HTTP);
 }
 
 
@@ -97,9 +97,9 @@ VOID StreamingServer::createConsole()
 	// std::cout, std::clog, std::cerr, std::cin
 	FILE* fDummy;
 
-	freopen_s(&fDummy, "CONOUT$", "w", stdout);
-	freopen_s(&fDummy, "CONOUT$", "w", stderr);
-	freopen_s(&fDummy, "CONIN$", "r", stdin);
+	(void)freopen_s(&fDummy, "CONOUT$", "w", stdout);
+	(void)freopen_s(&fDummy, "CONOUT$", "w", stderr);
+	(void)freopen_s(&fDummy, "CONIN$", "r", stdin);
 
 	std::cout.clear();
 	std::clog.clear();
@@ -127,7 +127,7 @@ VOID StreamingServer::createConsole()
 
 INT StreamingServer::main(const std::vector<std::string>& args)
 {
-	USHORT port = static_cast<USHORT>(config().getInt("Server.Port", 10000));
+	const USHORT port = static_cast<USHORT>(config().getInt("Server.Port", 10000));
 
 	Logger& logger = Logger::get("Server");
 	logger.debug("Initializing HTTP Server...");
@@ -136,7 +136,7 @@ INT StreamingServer::main(const std::vector<std::string>& args)
 	int maxThreads = config().getInt("Server.MaxThreads", 16);
 	ThreadPool::defaultPool().addCapacity(maxThreads);
 
-	auto pParams = new HTTPServerParams;
+	const auto pParams = new HTTPServerParams;
 	pParams->setKeepAlive(false);
 	pParams->setMaxQueued(maxQueued);
 	pParams->setMaxThreads(maxThreads);
@@ -144,7 +144,7 @@ INT StreamingServer::main(const std::vector<std::string>& args)
 	logger.debug("Max Threads: %d", maxThreads);
 
 	// set up the server socket
-	ServerSocket svs(port);
+	const ServerSocket svs(port);
 	// create the HTTP server instance
 	HTTPServer srv(new RequestHandlerFactory(), svs, pParams);
 

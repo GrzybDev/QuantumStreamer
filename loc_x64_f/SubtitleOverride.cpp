@@ -3,8 +3,26 @@
 
 #include "VideoList.hpp"
 
+using Poco::AutoPtr;
+using Poco::BinaryReader;
+using Poco::DirectoryIterator;
+using Poco::File;
 using Poco::Logger;
+using Poco::Path;
+using Poco::Dynamic::Var;
+using Poco::JSON::Parser;
+using Poco::JSON::Object;
 using Poco::Util::Application;
+using Poco::XML::DOMWriter;
+using Poco::XML::Element;
+using Poco::XML::InputSource;
+using Poco::XML::DOMParser;
+using Poco::XML::Node;
+using Poco::XML::NodeList;
+using Poco::XML::XMLWriter;
+using JSONArray = Poco::JSON::Array;
+using MongoArray = Poco::MongoDB::Array;
+using MongoDocument = Poco::MongoDB::Document;
 
 const char* SubtitleOverride::name() const
 {
@@ -32,133 +50,26 @@ void SubtitleOverride::initialize(Application& app)
 	// Check if the episodes path exists
 	for (const auto& episode : episodes)
 	{
-		auto episodePath = Poco::File(episodesPath + "/" + episode);
-
-		if (!(episodePath.exists() && episodePath.isDirectory()))
-			continue;
+		File episodeDir(episodesPath + "/" + episode);
+		if (!(episodeDir.exists() && episodeDir.isDirectory())) continue;
 
 		std::map<std::string, std::vector<std::string>> overrides;
 
-		// Find *_captions_override.json or *_captions_override.bson files
-		Poco::DirectoryIterator end;
-
-		for (Poco::DirectoryIterator it(episodePath); it != end; ++it)
+		for (DirectoryIterator it(episodeDir), end; it != end; ++it)
 		{
-			std::string fileName = it.name();
-			if ((Poco::Path(fileName).getExtension() == "json") &&
-				fileName.find("_captions_override") != std::string::npos &&
-				fileName.size() >= strlen("_captions_override.json"))
-			{
-				std::ifstream overrideFile(it.path().toString());
+			const auto& filePath = it.path();
+			const std::string& fileName = filePath.getFileName();
+			std::string extension = Path(fileName).getExtension();
 
-				if (!overrideFile)
-				{
-					logger.error("Failed to open subtitle override file: %s", it.path().toString());
-					continue;
-				}
+			if (fileName.find("_captions_override") == std::string::npos) continue;
 
-				Poco::JSON::Parser parser;
-				Poco::Dynamic::Var result = parser.parse(overrideFile);
-				auto jsonObject = result.extract<Poco::JSON::Object::Ptr>();
-
-				overrideFile.close();
-
-				Poco::JSON::Array::Ptr segmentsArray = jsonObject->getArray("segments");
-				if (segmentsArray.isNull())
-				{
-					logger.warning("No segments found in subtitle override file: %s", it.path().toString());
-					continue;
-				}
-
-				std::vector<std::string> segments;
-
-				for (size_t i = 0; i < segmentsArray->size(); ++i)
-				{
-					auto segment = segmentsArray->getElement<std::string>(i);
-					segments.push_back(segment);
-				}
-
-				// Key is the fileName without extension and _override
-				std::string captionKey = Poco::Path(fileName).getFileName();
-				captionKey = captionKey.substr(0, captionKey.find_last_of('_'));
-				captionKey = captionKey.substr(0, captionKey.find_last_of('.'));
-				overrides[captionKey] = segments;
-
-				if (jsonObject->has("episode_title"))
-				{
-					auto episodeTitle = jsonObject->getValue<std::string>("episode_title");
-					m_episodeNames[episode] = episodeTitle;
-				}
-
-				logger.debug(
-					"Successfully loaded caption overrides for episode %s! (Found overrides for %s captions for track %s)",
-					episode, std::to_string(overrides[captionKey].size()), captionKey);
-			}
+			if (extension == "json")
+				parseJsonOverride(filePath.toString(), fileName, episode, overrides);
+			else if (extension == "bson")
+				parseBsonOverride(filePath.toString(), fileName, episode, overrides);
 		}
 
-		// Now the same for BSON files
-		for (Poco::DirectoryIterator it(episodePath); it != end; ++it)
-		{
-			std::string fileName = it.name();
-			if ((Poco::Path(fileName).getExtension() == "bson") &&
-				fileName.find("_captions_override") != std::string::npos &&
-				fileName.size() >= strlen("_captions_override.bson"))
-			{
-				// Skip if caption overrides already loaded from JSON
-				std::string captionKey = Poco::Path(fileName).getFileName();
-				captionKey = captionKey.substr(0, captionKey.find_last_of('_'));
-				captionKey = captionKey.substr(0, captionKey.find_last_of('.'));
-
-				// If we already have this caption key from JSON, skip BSON loading
-				if (overrides.contains(captionKey))
-				{
-					logger.debug("Skipping BSON caption overrides for %s, already loaded from JSON", captionKey);
-					continue;
-				}
-
-				std::ifstream overrideFile(it.path().toString(), std::ios::binary);
-				if (!overrideFile)
-				{
-					logger.error("Failed to open BSON subtitle override file: %s", it.path().toString());
-					continue;
-				}
-
-				Poco::BinaryReader reader(overrideFile);
-
-				Poco::MongoDB::Document document;
-				document.read(reader);
-
-				overrideFile.close();
-
-				std::vector<std::string> segments;
-
-				// Read segments from BSON document
-				if (document.isType<Poco::MongoDB::Array::Ptr>("segments"))
-				{
-					auto segmentArray = document.get<Poco::MongoDB::Array::Ptr>("segments");
-
-					for (size_t i = 0; i < segmentArray->size(); ++i)
-					{
-						auto segment = segmentArray->get<std::string>(i);
-						segments.push_back(segment);
-					}
-				}
-
-				overrides[captionKey] = segments;
-
-				if (document.exists("episode_title"))
-				{
-					auto episodeTitle = document.get<std::string>("episode_title");
-					m_episodeNames[episode] = episodeTitle;
-				}
-
-				logger.debug(
-					"Successfully loaded caption overrides for episode %s! (Found overrides for %s captions for track %s)",
-					episode, std::to_string(overrides[captionKey].size()), captionKey);
-			}
-		}
-
-		m_subtitleOverrides[episode] = overrides;
+		m_subtitleOverrides[episode] = std::move(overrides);
 	}
 
 	logger.information("Successfully loaded caption overrides for %s episodes!",
@@ -170,7 +81,97 @@ void SubtitleOverride::uninitialize()
 	m_subtitleOverrides.clear();
 }
 
-std::string SubtitleOverride::OverrideSubtitles(std::string episodeId, std::string trackName, std::string& dataRaw,
+std::string SubtitleOverride::extractCaptionKey(const std::string& fileName)
+{
+	const std::string baseName = Path(fileName).getFileName();
+	const auto underscorePos = baseName.find_last_of('_');
+	const auto dotPos = baseName.find_last_of('.');
+	return baseName.substr(0, std::min(underscorePos, dotPos));
+}
+
+void SubtitleOverride::parseJsonOverride(const std::string& path, const std::string& fileName,
+                                         const std::string& episode,
+                                         std::map<std::string, std::vector<std::string>>& overrides)
+{
+	Logger& logger = Logger::get("Server");
+
+	std::ifstream file(path);
+	if (!file)
+	{
+		logger.error("Failed to open subtitle override file: %s", path);
+		return;
+	}
+
+	Parser parser;
+	const Var result = parser.parse(file);
+	const auto& jsonObject = result.extract<Object::Ptr>();
+	file.close();
+
+	JSONArray::Ptr segmentsArray = jsonObject->getArray("segments");
+	if (segmentsArray.isNull())
+	{
+		logger.warning("No segments found in subtitle override file: %s", path);
+		return;
+	}
+
+	std::vector<std::string> segments;
+	for (size_t i = 0; i < segmentsArray->size(); ++i)
+		segments.push_back(segmentsArray->getElement<std::string>(static_cast<UINT>(i)));
+
+	std::string captionKey = extractCaptionKey(fileName);
+	overrides[captionKey] = std::move(segments);
+
+	if (jsonObject->has("episode_title"))
+		m_episodeNames[episode] = jsonObject->getValue<std::string>("episode_title");
+
+	logger.debug("Loaded %s caption overrides from JSON for track %s in episode %s",
+	             std::to_string(overrides[captionKey].size()), captionKey, episode);
+}
+
+void SubtitleOverride::parseBsonOverride(const std::string& path, const std::string& fileName,
+                                         const std::string& episode,
+                                         std::map<std::string, std::vector<std::string>>& overrides)
+{
+	Logger& logger = Logger::get("Server");
+
+	std::string captionKey = extractCaptionKey(fileName);
+	if (overrides.contains(captionKey))
+	{
+		logger.debug("Skipping BSON override for %s (already loaded from JSON)", captionKey);
+		return;
+	}
+
+	std::ifstream file(path, std::ios::binary);
+	if (!file)
+	{
+		logger.error("Failed to open BSON subtitle override file: %s", path);
+		return;
+	}
+
+	BinaryReader reader(file);
+	MongoDocument document;
+	document.read(reader);
+	file.close();
+
+	std::vector<std::string> segments;
+	if (document.isType<MongoArray::Ptr>("segments"))
+	{
+		auto array = document.get<MongoArray::Ptr>("segments");
+		for (size_t i = 0; i < array->size(); ++i)
+			segments.push_back(array->get<std::string>(i));
+	}
+
+	overrides[captionKey] = std::move(segments);
+
+	if (document.exists("episode_title"))
+		m_episodeNames[episode] = document.get<std::string>("episode_title");
+
+	logger.debug("Loaded %s caption overrides from GSON for track %s in episode %s",
+	             std::to_string(overrides[captionKey].size()), captionKey, episode);
+}
+
+std::string SubtitleOverride::OverrideSubtitles(const std::string& episodeId, const std::string& trackName,
+                                                std::string& dataRaw,
                                                 bool appendEpTitle)
 {
 	if (!m_subtitleOverrides.contains(episodeId))
@@ -186,30 +187,30 @@ std::string SubtitleOverride::OverrideSubtitles(std::string episodeId, std::stri
 	auto segments = episodeOverrides[trackName];
 
 	std::istringstream xmlStream(dataRaw);
-	Poco::XML::InputSource src(xmlStream);
-	Poco::XML::DOMParser parser;
-	Poco::AutoPtr doc = parser.parse(&src);
-	Poco::AutoPtr root = doc->documentElement();
-	Poco::AutoPtr divs = root->getChildElement("body")->getElementsByTagName("div");
+	InputSource src(xmlStream);
+	DOMParser parser;
+	AutoPtr doc = parser.parse(&src);
+	AutoPtr root = doc->documentElement();
+	AutoPtr divs = root->getChildElement("body")->getElementsByTagName("div");
 
-	Poco::AutoPtr firstDiv = static_cast<Poco::XML::Element*>(divs->item(0));
+	AutoPtr firstDiv = dynamic_cast<Element*>(divs->item(0));
 
 	if (_episodeNames && appendEpTitle)
 	{
 		// Create new <p> element with attributes
-		Poco::AutoPtr p = doc->createElement("p");
+		AutoPtr p = doc->createElement("p");
 		p->setAttribute("xml:id", "episode_title");
 		p->setAttribute("begin", "00:00:00.000");
 		p->setAttribute("end", "00:00:01.850");
 		p->setAttribute("region", "speaker");
 
 		// Create <span> child with style and text content
-		Poco::AutoPtr span = doc->createElement("span");
+		AutoPtr span = doc->createElement("span");
 		span->setAttribute("style", "textStyle");
 
 		if (m_episodeNames.contains(episodeId))
 		{
-			Poco::AutoPtr text = doc->createTextNode(m_episodeNames[episodeId]);
+			AutoPtr text = doc->createTextNode(m_episodeNames[episodeId]);
 			span->appendChild(text);
 
 			// Append <span> to <p>
@@ -222,14 +223,14 @@ std::string SubtitleOverride::OverrideSubtitles(std::string episodeId, std::stri
 
 	for (ULONG i = 0; i < divs->length(); ++i)
 	{
-		auto div = static_cast<Poco::XML::Element*>(divs->item(i));
-		Poco::AutoPtr ps = div->getElementsByTagName("p");
+		auto div = dynamic_cast<Element*>(divs->item(i));
+		AutoPtr ps = div->getElementsByTagName("p");
 
 		for (ULONG j = 0; j < ps->length(); ++j)
 		{
-			auto p = static_cast<Poco::XML::Element*>(ps->item(j));
+			auto p = dynamic_cast<Element*>(ps->item(j));
+			auto span = dynamic_cast<Element*>(p->getElementsByTagName("span")->item(0));
 
-			auto span = static_cast<Poco::XML::Element*>(p->getElementsByTagName("span")->item(0));
 			std::string text = span->innerText();
 			std::string origText = text;
 
@@ -237,10 +238,7 @@ std::string SubtitleOverride::OverrideSubtitles(std::string episodeId, std::stri
 
 			if (segmentIdStr != "episode_title")
 			{
-				int segmentId = std::stoi(segmentIdStr.substr(1));
-
-
-				if (segmentId >= 0 && segmentId < segments.size())
+				if (int segmentId = std::stoi(segmentIdStr.substr(1)); segmentId >= 0 && segmentId < segments.size())
 					text = segments[segmentId];
 			}
 
@@ -263,11 +261,9 @@ std::string SubtitleOverride::OverrideSubtitles(std::string episodeId, std::stri
 			}
 
 			while (span->firstChild())
-			{
 				span->removeChild(span->firstChild());
-			}
 
-			Poco::AutoPtr newText = doc->createTextNode(text);
+			AutoPtr newText = doc->createTextNode(text);
 			span->appendChild(newText);
 
 			logger.trace("Episode: %s (%s), Segment: %s ('%s' -> '%s')", episodeId, trackName, segmentIdStr, origText,
@@ -275,8 +271,8 @@ std::string SubtitleOverride::OverrideSubtitles(std::string episodeId, std::stri
 		}
 	}
 
-	Poco::XML::DOMWriter writer;
-	writer.setOptions(Poco::XML::XMLWriter::WRITE_XML_DECLARATION | Poco::XML::XMLWriter::CANONICAL_XML);
+	DOMWriter writer;
+	writer.setOptions(XMLWriter::WRITE_XML_DECLARATION | XMLWriter::CANONICAL_XML);
 
 	std::ostringstream outputStream;
 	writer.writeNode(outputStream, doc);

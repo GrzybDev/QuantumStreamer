@@ -1,11 +1,11 @@
 #include "pch.hpp"
 #include "VideoList.hpp"
 
+using Poco::Logger;
 using Poco::Dynamic::Var;
 using Poco::JSON::Object;
 using Poco::JSON::Parser;
 using Poco::Util::Application;
-using Poco::Logger;
 
 const char* VideoList::name() const
 {
@@ -33,7 +33,7 @@ void VideoList::initialize(Application& app)
 
 	// Decrypt the video list data
 	for (size_t i = 0; i < videoListData.size(); ++i)
-		videoListData[i] ^= RMDJEncryptionKey[i % 32];
+		videoListData[i] ^= RMDJEncryptionKey[i % 32]; // NOLINT(cppcoreguidelines-narrowing-conversions)
 
 	auto tempVideoListStr = std::string(videoListData.begin(), videoListData.end());
 
@@ -57,19 +57,19 @@ std::vector<std::string> VideoList::getEpisodeList()
 	return episodes;
 }
 
-std::string VideoList::getManifestUrl(std::string episodeId)
+std::string VideoList::getManifestUrl(const std::string& episodeId)
 {
 	if (!videoList->has(episodeId))
-		return std::string();
+		return {};
 
 	return videoList->getValue<std::string>(episodeId);
 }
 
-std::string VideoList::getFragmentUrl(std::string episodeId, std::string bitrate, std::string type,
-                                      std::string startTime)
+std::string VideoList::getFragmentUrl(const std::string& episodeId, const std::string& bitrate, const std::string& type,
+                                      const std::string& startTime)
 {
 	if (!videoList->has(episodeId))
-		return std::string();
+		return {};
 
 	auto manifestUrl = videoList->getValue<std::string>(episodeId);
 
@@ -82,7 +82,7 @@ std::string VideoList::getFragmentUrl(std::string episodeId, std::string bitrate
 	{
 		Logger& logger = Logger::get("Server");
 		logger.warning("Failed to find 'manifest' in URL: %s", manifestUrl);
-		return std::string();
+		return {};
 	}
 
 	return fragmentUrl;

@@ -13,5 +13,5 @@ private:
 	std::string _langCode;
 	std::string _startTime;
 
-	std::string processSubtitleData(std::string& data);
+	std::string processSubtitleData(const std::string& data) const;
 };

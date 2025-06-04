@@ -5,15 +5,20 @@
 #include "ManifestRequestHandler.hpp"
 #include "SubtitleFragmentRequestHandler.hpp"
 
-Poco::Net::HTTPRequestHandler* RequestHandlerFactory::createRequestHandler(const Poco::Net::HTTPServerRequest& request)
+using Poco::Logger;
+using Poco::Net::HTTPRequest;
+using Poco::Net::HTTPRequestHandler;
+using Poco::Net::HTTPServerRequest;
+
+HTTPRequestHandler* RequestHandlerFactory::createRequestHandler(const HTTPServerRequest& request)
 {
-	Poco::Logger& logger = Poco::Logger::get("HTTP");
+	Logger& logger = Logger::get("HTTP");
 
 	logger.debug("%s %s %s", request.getMethod(), request.getURI(), request.getVersion());
 
-	if (request.getMethod() == Poco::Net::HTTPRequest::HTTP_GET)
+	if (request.getMethod() == HTTPRequest::HTTP_GET)
 	{
-		std::string uri = request.getURI();
+		const std::string& uri = request.getURI();
 
 		std::regex manifestUrlPattern("^/([^/]+)/manifest$");
 		std::regex captionFragmentUrlPattern(

@@ -14,8 +14,9 @@ public:
 	const char* name() const override;
 
 	std::vector<std::string> getEpisodeList();
-	std::string getManifestUrl(std::string episodeId);
-	std::string getFragmentUrl(std::string episodeId, std::string bitrate, std::string type, std::string startTime);
+	std::string getManifestUrl(const std::string& episodeId);
+	std::string getFragmentUrl(const std::string& episodeId, const std::string& bitrate, const std::string& type,
+	                           const std::string& startTime);
 
 protected:
 	void initialize(Poco::Util::Application& app) override;

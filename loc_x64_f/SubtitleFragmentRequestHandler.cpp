@@ -5,6 +5,16 @@
 #include "SubtitleOverride.hpp"
 #include "VideoList.hpp"
 
+using Poco::Logger;
+using Poco::StreamCopier;
+using Poco::Timespan;
+using Poco::URI;
+using Poco::Net::HTTPClientSession;
+using Poco::Net::HTTPMessage;
+using Poco::Net::HTTPRequest;
+using Poco::Net::HTTPResponse;
+using Poco::Net::HTTPServerRequest;
+using Poco::Net::HTTPServerResponse;
 using Poco::Util::Application;
 
 SubtitleFragmentRequestHandler::SubtitleFragmentRequestHandler(std::string episodeId, std::string bitrate,
@@ -17,8 +27,7 @@ SubtitleFragmentRequestHandler::SubtitleFragmentRequestHandler(std::string episo
 {
 }
 
-void SubtitleFragmentRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request,
-                                                   Poco::Net::HTTPServerResponse& response)
+void SubtitleFragmentRequestHandler::handleRequest(HTTPServerRequest& request, HTTPServerResponse& response)
 {
 	Application& app = Application::instance();
 	VideoList& videoList = app.getSubsystem<VideoList>();
@@ -27,13 +36,14 @@ void SubtitleFragmentRequestHandler::handleRequest(Poco::Net::HTTPServerRequest&
 
 	if (manifestUrl.empty())
 	{
-		response.setStatus(Poco::Net::HTTPResponse::HTTP_NOT_FOUND);
+		response.setStatus(HTTPResponse::HTTP_NOT_FOUND);
 		response.send();
 		return;
 	}
 
 	OfflineStreaming& offlineStreaming = app.getSubsystem<OfflineStreaming>();
-	std::string localFragment = offlineStreaming.GetLocalFragment(_episodeId, _langCode + "_captions", _bitrate, _startTime);
+	std::string localFragment = offlineStreaming.GetLocalFragment(_episodeId, _langCode + "_captions", _bitrate,
+	                                                              _startTime);
 
 	if (localFragment.empty())
 	{
@@ -52,35 +62,35 @@ void SubtitleFragmentRequestHandler::handleRequest(Poco::Net::HTTPServerRequest&
 		// The only thing we need to change is the Host header to the manifest URL's host
 
 		// Parse manifest URL to extract the host
-		Poco::URI uri(manifestUrl);
-		std::string manifestHost = uri.getHost();
+		URI uri(manifestUrl);
+		const std::string& manifestHost = uri.getHost();
 
-		Poco::Net::HTTPRequest manifestRequest(Poco::Net::HTTPRequest::HTTP_GET, manifestUrl,
-			Poco::Net::HTTPMessage::HTTP_1_1);
+		HTTPRequest manifestRequest(HTTPRequest::HTTP_GET, manifestUrl, HTTPMessage::HTTP_1_1);
+
 		// Copy headers from the original request to the manifest request
-		for (const auto& header : request)
+		for (const auto& [key, value] : request)
 		{
-			if (header.first != "Host")
+			if (key != "Host")
 			{
 				// Skip Host header, we'll set it later
-				manifestRequest.set(header.first, header.second);
+				manifestRequest.set(key, value);
 			}
 		}
 		// Set the Host header to the manifest URL's host
 		manifestRequest.set("Host", manifestHost);
 
 		// Send the request to the manifest URL
-		Poco::Net::HTTPClientSession session(uri.getHost(), uri.getPort());
-		session.setTimeout(Poco::Timespan(10, 0)); // Set a timeout for the request
+		HTTPClientSession session(uri.getHost(), uri.getPort());
+		session.setTimeout(Timespan(10, 0)); // Set a timeout for the request
 
 		// Send the request and get the response
-		std::ostream& manifestRequestStream = session.sendRequest(manifestRequest);
+		session.sendRequest(manifestRequest);
 
-		Poco::Net::HTTPResponse manifestResponse;
+		HTTPResponse manifestResponse;
 		std::istream& manifestResponseStream = session.receiveResponse(manifestResponse);
 
 		std::ostringstream buffer;
-		Poco::StreamCopier::copyStream(manifestResponseStream, buffer);
+		StreamCopier::copyStream(manifestResponseStream, buffer);
 		std::string bodyStr = buffer.str();
 		std::string bodyStrNew = processSubtitleData(bodyStr);
 
@@ -90,31 +100,31 @@ void SubtitleFragmentRequestHandler::handleRequest(Poco::Net::HTTPServerRequest&
 			response.set(header.first, header.second);
 
 		// Calculate Content-Length
-		response.setContentLength(bodyStrNew.size());
+		response.setContentLength(static_cast<LONGLONG>(bodyStrNew.size()));
 
 		std::ostream& responseBody = response.send();
-		responseBody.write(bodyStrNew.data(), bodyStrNew.size());
+		responseBody.write(bodyStrNew.data(), static_cast<LONGLONG>(bodyStrNew.size()));
 	}
 	else
 	{
 		std::string newLocalFragment = processSubtitleData(localFragment);
-		response.setContentLength(newLocalFragment.size());
+		response.setContentLength(static_cast<LONGLONG>(newLocalFragment.size()));
 
 		std::ostream& responseBody = response.send();
-		responseBody.write(newLocalFragment.data(), newLocalFragment.size());
+		responseBody.write(newLocalFragment.data(), static_cast<LONGLONG>(newLocalFragment.size()));
 	}
 }
 
-std::string SubtitleFragmentRequestHandler::processSubtitleData(std::string& data)
+std::string SubtitleFragmentRequestHandler::processSubtitleData(const std::string& data) const
 {
-	auto bytesData = new char[data.size()];
-	memcpy(bytesData, data.data(), data.size());
+	const auto bytesData = new char[data.size()];
+	memcpy(bytesData, data.data(), data.size()); // NOLINT(bugprone-not-null-terminated-result)
 
 	UINT moofSize;
 	memcpy(&moofSize, bytesData, 4);
 	moofSize = _byteswap_ulong(moofSize);
 
-	auto moofBlock = new char[moofSize];
+	const auto moofBlock = new char[moofSize];
 	memcpy(moofBlock, bytesData, moofSize);
 
 	UINT mdatSize;
@@ -129,22 +139,23 @@ std::string SubtitleFragmentRequestHandler::processSubtitleData(std::string& dat
 	// Skip 8 bytes and read it as string
 	std::string subtitleData(mdatBlock + 8, mdatSize - 8);
 
-	Application& app = Application::instance();
+	const Application& app = Application::instance();
 	SubtitleOverride& subtitleOverride = app.getSubsystem<SubtitleOverride>();
 
-	std::string newSubtitleData = subtitleOverride.OverrideSubtitles(_episodeId, _langCode + "_captions", subtitleData,
-	                                                                 _startTime == "80080000");
+	const std::string newSubtitleData = subtitleOverride.OverrideSubtitles(
+		_episodeId, _langCode + "_captions", subtitleData,
+		_startTime == "80080000");
 
-	mdatSize = newSubtitleData.size() + 8;
+	mdatSize = static_cast<UINT>(newSubtitleData.size() + 8);
 
 	// delete original mdat
 	delete[] mdatBlock;
 	mdatBlock = new char[mdatSize];
 
 	// Write mdatSize in big-endian
-	unsigned int mdatSizeBE = _byteswap_ulong(mdatSize);
-	memcpy(mdatBlock, &mdatSizeBE, 4);
-	memcpy(mdatBlock + 4, "mdat", 4);
+	const unsigned int mdatSizeBe = _byteswap_ulong(mdatSize);
+	memcpy(mdatBlock, &mdatSizeBe, 4);
+	memcpy(mdatBlock + 4, "mdat", 4); // NOLINT(bugprone-not-null-terminated-result)
 	memcpy(mdatBlock + 8, newSubtitleData.c_str(), newSubtitleData.size());
 
 	std::string newData = std::string(moofBlock, moofSize) + std::string(mdatBlock, mdatSize);

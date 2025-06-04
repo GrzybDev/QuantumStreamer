@@ -9,6 +9,6 @@ protected:
 	INT main(const std::vector<std::string>& args) override;
 
 private:
-	VOID initLoggers();
-	VOID createConsole();
+	VOID initLoggers() const;
+	static VOID createConsole();
 };

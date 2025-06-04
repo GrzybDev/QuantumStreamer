@@ -6,7 +6,8 @@ public:
 	const char* name() const override;
 
 	std::string GetLocalClientManifest(std::string episodeId);
-	std::string GetLocalFragment(std::string episodeId, std::string trackName, std::string bitrate, std::string startTime);
+	std::string GetLocalFragment(std::string episodeId, std::string trackName, std::string bitrate,
+	                             std::string startTime);
 
 protected:
 	void initialize(Poco::Util::Application& app) override;
@@ -15,16 +16,16 @@ protected:
 private:
 	struct SmoothFragment
 	{
-		long long moofOffset;
-		long long trafNumber;
-		long long trunNumber;
-		long long sampleNumber;
+		ULONGLONG moofOffset;
+		ULONGLONG trafNumber;
+		ULONGLONG trunNumber;
+		ULONGLONG sampleNumber;
 	};
 
 	struct SmoothTrack
 	{
 		char version;
-		int trackId;
+		UINT trackId;
 		int lengthSizeOfTrafNum;
 		int lengthSizeOfTrunNum;
 		int lengthSizeOfSampleNum;
@@ -46,6 +47,7 @@ private:
 
 	std::map<std::string, SmoothStream> _streams;
 
-	void processMediaNodes(const std::string& tagName, Poco::XML::Document* doc, std::string episodeId, const Poco::Path& episodePath, SmoothStream& stream);
-	std::pair<bool, SmoothTrack> preloadTrack(Poco::Path path);
+	void processMediaNodes(const std::string& tagName, Poco::XML::Document* doc, std::string episodeId,
+	                       std::string episodePath, SmoothStream& stream);
+	std::pair<bool, SmoothTrack> preloadTrack(std::string path);
 };

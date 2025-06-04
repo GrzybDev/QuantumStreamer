@@ -3,14 +3,27 @@
 
 #include "VideoList.hpp"
 
+using Poco::AutoPtr;
+using Poco::DirectoryIterator;
+using Poco::File;
+using Poco::Logger;
+using Poco::Path;
+using Poco::Util::Application;
+using Poco::XML::DOMParser;
+using Poco::XML::Element;
+using Poco::XML::InputSource;
+using Poco::XML::Node;
+using Poco::XML::NodeList;
+using XMLDocument = Poco::XML::Document;
+
 const char* OfflineStreaming::name() const
 {
 	return "OfflineStreaming";
 }
 
-void OfflineStreaming::initialize(Poco::Util::Application& app)
+void OfflineStreaming::initialize(Application& app)
 {
-	Poco::Logger& logger = Poco::Logger::get("Server");
+	Logger& logger = Logger::get("Server");
 	logger.information("Initializing offline playback module...");
 
 	std::string episodesPath = app.config().getString("Server.EpisodesPath", "./videos/episodes");
@@ -20,20 +33,17 @@ void OfflineStreaming::initialize(Poco::Util::Application& app)
 	// Check if the episodes path exists
 	for (const auto& episode : episodes)
 	{
-		Poco::Path episodePath(episodesPath);
+		Path episodePath(episodesPath);
 		episodePath.append(episode);
-		Poco::File episodeDir(episodePath);
+		File episodeDir(episodePath);
 
 		if (!(episodeDir.exists() && episodeDir.isDirectory()))
 			continue;
 
 		// Find all *.ism files in the episode directory
-
-		Poco::DirectoryIterator end;
-
-		for (Poco::DirectoryIterator it(episodeDir), end; it != end; ++it)
+		for (DirectoryIterator it(episodeDir), end; it != end; ++it)
 		{
-			if (Poco::Path(it.name()).getExtension() != "ism")
+			if (Path(it.name()).getExtension() != "ism")
 				continue;
 
 			std::ifstream fileStream(it.path().toString());
@@ -45,26 +55,26 @@ void OfflineStreaming::initialize(Poco::Util::Application& app)
 
 			std::string manifestContent((std::istreambuf_iterator<char>(fileStream)), {});
 			std::istringstream manifestStream(manifestContent);
-			Poco::XML::InputSource manifestSource(manifestStream);
-			Poco::XML::DOMParser parser;
-			Poco::XML::Document* doc(parser.parse(&manifestSource));
+			InputSource manifestSource(manifestStream);
+			DOMParser parser;
+			AutoPtr doc(parser.parse(&manifestSource));
 
 			SmoothStream stream;
-			Poco::XML::Node* metaNode = doc->getNodeByPath("//head/meta[@name='clientManifestRelativePath']");
-			if (!metaNode || metaNode->nodeType() != Poco::XML::Node::ELEMENT_NODE)
+			Node* metaNode = doc->getNodeByPath("//head/meta[@name='clientManifestRelativePath']");
+			if (!metaNode || metaNode->nodeType() != Node::ELEMENT_NODE)
 			{
 				logger.warning("Server manifest file (%s) missing clientManifestRelativePath, skipping.", it.name());
 				continue;
 			}
 
-			auto* metaElem = static_cast<Poco::XML::Element*>(metaNode);
-			Poco::Path clientManifestPath = episodePath;
+			auto* metaElem = static_cast<Element*>(metaNode);
+			Path clientManifestPath = episodePath;
 			clientManifestPath.append(metaElem->getAttribute("content"));
 			stream.clientManifestRelativePath = clientManifestPath;
 
-			processMediaNodes("video", doc, episode, episodePath, stream);
-			processMediaNodes("audio", doc, episode, episodePath, stream);
-			processMediaNodes("textstream", doc, episode, episodePath, stream);
+			processMediaNodes("video", doc, episode, episodePath.toString(), stream);
+			processMediaNodes("audio", doc, episode, episodePath.toString(), stream);
+			processMediaNodes("textstream", doc, episode, episodePath.toString(), stream);
 
 			_streams[episode] = stream;
 		}
@@ -76,30 +86,34 @@ void OfflineStreaming::uninitialize()
 	_streams.clear();
 }
 
-void OfflineStreaming::processMediaNodes(const std::string& tagName, Poco::XML::Document* doc, std::string episodeId, const Poco::Path& episodePath, SmoothStream& stream)
+void OfflineStreaming::processMediaNodes(const std::string& tagName, XMLDocument* doc, std::string episodeId,
+                                         std::string episodePath, SmoothStream& stream)
 {
-	Poco::Logger& logger = Poco::Logger::get("Server");
+	Logger& logger = Logger::get("Server");
 
-	Poco::XML::NodeList* nodes = doc->getElementsByTagName(tagName);
+	NodeList* nodes = doc->getElementsByTagName(tagName);
 	for (unsigned long i = 0; i < nodes->length(); ++i)
 	{
-		auto* elem = static_cast<Poco::XML::Element*>(nodes->item(i));
+		auto* elem = static_cast<Element*>(nodes->item(i));
 		std::string src = elem->getAttribute("src");
 		std::string bitrate = elem->getAttribute("systemBitrate");
 
 		std::string trackName = "video";
-		if (tagName != "video") {
-			Poco::XML::NodeList* params = elem->getElementsByTagName("param");
-			for (unsigned long j = 0; j < params->length(); ++j) {
-				auto* param = static_cast<Poco::XML::Element*>(params->item(j));
-				if (param->getAttribute("name") == "trackName") {
+		if (tagName != "video")
+		{
+			NodeList* params = elem->getElementsByTagName("param");
+			for (unsigned long j = 0; j < params->length(); ++j)
+			{
+				auto* param = static_cast<Element*>(params->item(j));
+				if (param->getAttribute("name") == "trackName")
+				{
 					trackName = param->getAttribute("value");
 					break;
 				}
 			}
 		}
 
-		Poco::Path fullPath = episodePath;
+		Path fullPath = episodePath;
 		fullPath.append(src);
 		if (!fullPath.isFile())
 			continue;
@@ -107,142 +121,143 @@ void OfflineStreaming::processMediaNodes(const std::string& tagName, Poco::XML::
 		SmoothMedia media;
 		media.sourceFile = fullPath;
 		media.systemBitrate = bitrate;
-		auto track = preloadTrack(fullPath);
+		auto track = preloadTrack(fullPath.toString());
 
 		if (track.first)
 		{
 			media.track[bitrate] = track.second;
 			stream.mediaMap[trackName] = media;
-			logger.debug("Preloaded %s track '%s' for episode %s from %s with bitrate %s", tagName, trackName, episodeId, fullPath.toString(), bitrate);
+			logger.debug("Preloaded %s track '%s' for episode %s from %s with bitrate %s", tagName, trackName,
+			             episodeId, fullPath.toString(), bitrate);
 		}
 	}
 }
 
-std::pair<bool, OfflineStreaming::SmoothTrack> OfflineStreaming::preloadTrack(Poco::Path path)
+std::pair<bool, OfflineStreaming::SmoothTrack> OfflineStreaming::preloadTrack(std::string path)
 {
-	Poco::Logger& logger = Poco::Logger::get("Server");
+	Logger& logger = Logger::get("Server");
 
 	bool success = false;
 
 	SmoothTrack track;
 
-	std::ifstream trackStream(path.toString(), std::ios::binary);
+	std::ifstream trackStream(path, std::ios::binary);
 
 	if (!trackStream)
 	{
-		logger.warning("Failed to open track file: %s", path.toString());
-		return { success, track };
+		logger.warning("Failed to open track file: %s", path);
+		return {success, track};
 	}
 
 	// Read mfro box
 	trackStream.seekg(-4, std::ios::end);
 
-	int mfroSize;
+	UINT mfroSize;
 	trackStream.read(reinterpret_cast<char*>(&mfroSize), 4);
 	mfroSize = _byteswap_ulong(mfroSize);
 
-	trackStream.seekg(-mfroSize, std::ios::end);
+	trackStream.seekg(-static_cast<INT>(mfroSize), std::ios::end);
 
 	// Read mfra box
-	unsigned int mfraBlockSize;
-
+	UINT mfraBlockSize;
 	trackStream.read(reinterpret_cast<char*>(&mfraBlockSize), 4);
-
 	mfraBlockSize = _byteswap_ulong(mfraBlockSize);
 
 	if (mfraBlockSize != mfroSize)
 	{
-		logger.warning("Invalid mfro block size in track file %s, expected %s, got: %s, skipping this track.", path.toString(), std::to_string(mfroSize), std::to_string(mfraBlockSize));
+		logger.warning("Invalid mfro block size in track file %s, expected %s, got: %s, skipping this track.", path,
+		               std::to_string(mfroSize), std::to_string(mfraBlockSize));
 		trackStream.close();
 
-		return { success, track };
+		return {success, track};
 	}
 
 	std::string mfraMagic(4, '\0');
-	trackStream.read(&mfraMagic[0], 4);
+	trackStream.read(mfraMagic.data(), 4);
 
 	if (mfraMagic != "mfra")
 	{
-		logger.warning("Invalid mfra magic in track file %s, expected: mfra, got: %s, skipping this track.", path.toString(), mfraMagic);
+		logger.warning("Invalid mfra magic in track file %s, expected: mfra, got: %s, skipping this track.", path,
+		               mfraMagic);
 		trackStream.close();
 
-		return { success, track };
+		return {success, track};
 	}
 
 	// Read tfra box
-	unsigned int tfraSize;
+	UINT tfraSize;
 	trackStream.read(reinterpret_cast<char*>(&tfraSize), 4);
 	tfraSize = _byteswap_ulong(tfraSize);
 
 	std::string tfraMagic(4, '\0');
-	trackStream.read(&tfraMagic[0], 4);
+	trackStream.read(tfraMagic.data(), 4);
 
 	if (tfraMagic != "tfra")
 	{
-		logger.warning("Invalid tfra magic in track file %s, expected: tfra, got: %s, skipping this track.", path.toString(), tfraMagic);
+		logger.warning("Invalid tfra magic in track file %s, expected: tfra, got: %s, skipping this track.", path,
+		               tfraMagic);
 		trackStream.close();
 
-		return { success, track };
+		return {success, track};
 	}
-
 
 	char version;
 	trackStream.read(&version, 1);
 	// Skip flags
 	trackStream.seekg(3, std::ios::cur);
 
-	unsigned int trackId;
+	UINT trackId;
 	trackStream.read(reinterpret_cast<char*>(&trackId), 4);
 	track.trackId = _byteswap_ulong(trackId);
 
-	int temp;
+	INT temp;
 	trackStream.read(reinterpret_cast<char*>(&temp), 4);
 	track.lengthSizeOfTrafNum = ((temp & 0x3F) >> 4) + 1;
 	track.lengthSizeOfTrunNum = ((temp & 0xC) >> 2) + 1;
 	track.lengthSizeOfSampleNum = ((temp & 0x3)) + 1;
 
-	unsigned int numberOfEntries;
+	UINT numberOfEntries;
 	trackStream.read(reinterpret_cast<char*>(&numberOfEntries), 4);
 	numberOfEntries = _byteswap_ulong(numberOfEntries);
 
 	std::map<std::string, SmoothFragment> fragments;
 
-	for (unsigned int i = 0; i < numberOfEntries; i++)
+	for (UINT i = 0; i < numberOfEntries; i++)
 	{
 		SmoothFragment fragment{};
 
-		long long startTime;
+		ULONGLONG startTime;
 
 		if (version == 1)
 		{
-			long long time;
+			ULONGLONG time;
 			trackStream.read(reinterpret_cast<char*>(&time), 8);
 			startTime = _byteswap_uint64(time);
 
-			long long moofOffset;
+			ULONGLONG moofOffset;
 			trackStream.read(reinterpret_cast<char*>(&moofOffset), 8);
 			fragment.moofOffset = _byteswap_uint64(moofOffset);
 		}
 		else
 		{
-			unsigned int time;
+			UINT time;
 			trackStream.read(reinterpret_cast<char*>(&time), 4);
 			startTime = _byteswap_ulong(time);
 
-			unsigned int moofOffset;
+			UINT moofOffset;
 			trackStream.read(reinterpret_cast<char*>(&moofOffset), 4);
 			fragment.moofOffset = _byteswap_ulong(moofOffset);
 		}
 
-		long long trafNumber;
+		ULONGLONG trafNumber;
 		trackStream.read(reinterpret_cast<char*>(&trafNumber), track.lengthSizeOfTrafNum);
 		fragment.trafNumber = _byteswap_uint64(trafNumber);
 
-		long long trunNumber;
+		ULONGLONG trunNumber;
 		trackStream.read(reinterpret_cast<char*>(&trunNumber), track.lengthSizeOfTrunNum);
 		fragment.trunNumber = _byteswap_uint64(trunNumber);
 
-		long long sampleNumber;
+		ULONGLONG sampleNumber;
 		trackStream.read(reinterpret_cast<char*>(&sampleNumber), track.lengthSizeOfSampleNum);
 		fragment.sampleNumber = _byteswap_uint64(sampleNumber);
 
@@ -253,7 +268,7 @@ std::pair<bool, OfflineStreaming::SmoothTrack> OfflineStreaming::preloadTrack(Po
 	success = true;
 	trackStream.close();
 
-	return { success, track };
+	return {success, track};
 }
 
 std::string OfflineStreaming::GetLocalClientManifest(std::string episodeId)
@@ -261,14 +276,16 @@ std::string OfflineStreaming::GetLocalClientManifest(std::string episodeId)
 	if (!_streams.contains(episodeId))
 		return "";
 
-	Poco::Logger& logger = Poco::Logger::get("Server");
+	Logger& logger = Logger::get("Server");
 
-	Poco::Path clientManifestRelativePath = _streams[episodeId].clientManifestRelativePath;
+	Path clientManifestRelativePath = _streams[episodeId].clientManifestRelativePath;
 	std::ifstream clientManifestStream(clientManifestRelativePath.toString());
 
 	if (!clientManifestStream)
 	{
-		logger.warning("Failed to open client manifest file %s, the file was there while initializing, but it probably got deleted. Will need to fetch client manifest from server.", clientManifestRelativePath);
+		logger.warning(
+			"Failed to open client manifest file %s, the file was there while initializing, but it probably got deleted. Will need to fetch client manifest from server.",
+			clientManifestRelativePath);
 		clientManifestStream.close();
 
 		return "";
@@ -282,12 +299,13 @@ std::string OfflineStreaming::GetLocalClientManifest(std::string episodeId)
 	return buffer.str();
 }
 
-std::string OfflineStreaming::GetLocalFragment(std::string episodeId, std::string trackName, std::string bitrate, std::string startTime)
+std::string OfflineStreaming::GetLocalFragment(std::string episodeId, std::string trackName, std::string bitrate,
+                                               std::string startTime)
 {
 	if (!_streams.contains(episodeId))
 		return {};
 
-	Poco::Logger& logger = Poco::Logger::get("Server");
+	Logger& logger = Logger::get("Server");
 
 	SmoothStream stream = _streams[episodeId];
 
@@ -310,24 +328,28 @@ std::string OfflineStreaming::GetLocalFragment(std::string episodeId, std::strin
 
 	if (!fragmentStream)
 	{
-		logger.warning("Failed to open track file %s, the file was there while initializing, but it probably got deleted. Will need to fetch client manifest from server.", media.sourceFile.toString());
+		logger.warning(
+			"Failed to open track file %s, the file was there while initializing, but it probably got deleted. Will need to fetch client manifest from server.",
+			media.sourceFile.toString());
 		fragmentStream.close();
 
 		return {};
 	}
 
-	fragmentStream.seekg(fragment.moofOffset);
+	fragmentStream.seekg(static_cast<LONGLONG>(fragment.moofOffset));
 
 	unsigned int moofSize;
 	fragmentStream.read(reinterpret_cast<char*>(&moofSize), 4);
 	moofSize = _byteswap_ulong(moofSize);
 
 	std::string moofMagic(4, '\0');
-	fragmentStream.read(&moofMagic[0], 4);
+	fragmentStream.read(moofMagic.data(), 4);
 
 	if (moofMagic != "moof")
 	{
-		logger.warning("Invalid moof magic in fragment at start time %s in track %s, expected: moof, got %s. Will need to fetch that fragment from server.", startTime, media.sourceFile, moofMagic);
+		logger.warning(
+			"Invalid moof magic in fragment at start time %s in track %s, expected: moof, got %s. Will need to fetch that fragment from server.",
+			startTime, media.sourceFile, moofMagic);
 		fragmentStream.close();
 
 		return {};
@@ -351,7 +373,9 @@ std::string OfflineStreaming::GetLocalFragment(std::string episodeId, std::strin
 
 	if (mdatMagic != "mdat")
 	{
-		logger.warning("Invalid mdat magic in fragment at start time %s in track %s, expected: mdat, got %s. Will need to fetch that fragment from server.", startTime, media.sourceFile, mdatMagic);
+		logger.warning(
+			"Invalid mdat magic in fragment at start time %s in track %s, expected: mdat, got %s. Will need to fetch that fragment from server.",
+			startTime, media.sourceFile, mdatMagic);
 		fragmentStream.close();
 
 		return "";
