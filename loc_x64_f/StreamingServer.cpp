@@ -132,8 +132,17 @@ INT StreamingServer::main(const std::vector<std::string>& args)
 	Logger& logger = Logger::get("Server");
 	logger.debug("Initializing HTTP Server...");
 
-	int maxQueued = config().getInt("Server.MaxQueued", 100);
-	int maxThreads = config().getInt("Server.MaxThreads", 16);
+	UINT n = std::thread::hardware_concurrency();
+
+	if (n == 0)
+	{
+		logger.warning(
+			"Could not detect hardware concurrency, will use default value of 2 threads if not configured manually.");
+		n = 2; // Default to 2 threads if hardware concurrency cannot be detected
+	}
+
+	const int maxQueued = config().getInt("Server.MaxQueued", 100);
+	const int maxThreads = config().getInt("Server.MaxThreads", static_cast<INT>(n));
 	ThreadPool::defaultPool().addCapacity(maxThreads);
 
 	const auto pParams = new HTTPServerParams;
