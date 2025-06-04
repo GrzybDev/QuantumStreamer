@@ -84,7 +84,9 @@ void SubtitleFragmentRequestHandler::handleRequest(HTTPServerRequest& request, H
 
 			// Send the request to the manifest URL
 			HTTPClientSession session(uri.getHost(), uri.getPort());
-			session.setTimeout(Timespan(10, 0)); // Set a timeout for the request
+
+			// Set a timeout for the request (Game seems to use 20 seconds till it tries to retry)
+			session.setTimeout(Timespan(20, 0));
 
 			// Send the request and get the response
 			session.sendRequest(fragmentRequest);
