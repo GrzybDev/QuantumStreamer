@@ -32,9 +32,9 @@ void SubtitleFragmentRequestHandler::handleRequest(HTTPServerRequest& request, H
 	Application& app = Application::instance();
 	VideoList& videoList = app.getSubsystem<VideoList>();
 
-	std::string manifestUrl = videoList.getFragmentUrl(_episodeId, _bitrate, _langCode + "_captions", _startTime);
+	std::string fragmentUrl = videoList.getFragmentUrl(_episodeId, _bitrate, _langCode + "_captions", _startTime);
 
-	if (manifestUrl.empty())
+	if (fragmentUrl.empty())
 	{
 		response.setStatus(HTTPResponse::HTTP_NOT_FOUND);
 		response.send();
@@ -47,9 +47,10 @@ void SubtitleFragmentRequestHandler::handleRequest(HTTPServerRequest& request, H
 
 	if (localFragment.empty())
 	{
+		Logger& logger = Logger::get("Server");
+
 		if (app.config().getBool("Server.OfflineMode", false))
 		{
-			Logger& logger = Logger::get("Server");
 			logger.warning("Offline mode is enabled, but the requested fragment is not available locally: %s",
 			               _episodeId);
 
@@ -62,48 +63,66 @@ void SubtitleFragmentRequestHandler::handleRequest(HTTPServerRequest& request, H
 		// The only thing we need to change is the Host header to the manifest URL's host
 
 		// Parse manifest URL to extract the host
-		URI uri(manifestUrl);
-		const std::string& manifestHost = uri.getHost();
+		URI uri(fragmentUrl);
+		const std::string& fragmentHost = uri.getHost();
 
-		HTTPRequest manifestRequest(HTTPRequest::HTTP_GET, manifestUrl, HTTPMessage::HTTP_1_1);
-
-		// Copy headers from the original request to the manifest request
-		for (const auto& [key, value] : request)
+		try
 		{
-			if (key != "Host")
+			HTTPRequest fragmentRequest(HTTPRequest::HTTP_GET, fragmentUrl, HTTPMessage::HTTP_1_1);
+
+			// Copy headers from the original request to the manifest request
+			for (const auto& [key, value] : request)
 			{
-				// Skip Host header, we'll set it later
-				manifestRequest.set(key, value);
+				if (key != "Host")
+				{
+					// Skip Host header, we'll set it later
+					fragmentRequest.set(key, value);
+				}
 			}
+			// Set the Host header to the manifest URL's host
+			fragmentRequest.set("Host", fragmentHost);
+
+			// Send the request to the manifest URL
+			HTTPClientSession session(uri.getHost(), uri.getPort());
+			session.setTimeout(Timespan(10, 0)); // Set a timeout for the request
+
+			// Send the request and get the response
+			session.sendRequest(fragmentRequest);
+
+			HTTPResponse fragmentResponse;
+			std::istream& manifestResponseStream = session.receiveResponse(fragmentResponse);
+
+			std::ostringstream buffer;
+			StreamCopier::copyStream(manifestResponseStream, buffer);
+			std::string bodyStr = buffer.str();
+			std::string bodyStrNew = processSubtitleData(bodyStr);
+
+			auto responseStatus = fragmentResponse.getStatus();
+
+			if (responseStatus != HTTPResponse::HTTP_OK)
+			{
+				logger.error("Failed to fetch subtitle fragment! Remote server returned %s status code.",
+				             std::to_string(responseStatus));
+				logger.trace(bodyStr);
+			}
+
+			response.setStatus(responseStatus);
+
+			for (const auto& header : fragmentResponse)
+				response.set(header.first, header.second);
+
+			// Calculate Content-Length
+			response.setContentLength(static_cast<LONGLONG>(bodyStrNew.size()));
+
+			std::ostream& responseBody = response.send();
+			responseBody.write(bodyStrNew.data(), static_cast<LONGLONG>(bodyStrNew.size()));
 		}
-		// Set the Host header to the manifest URL's host
-		manifestRequest.set("Host", manifestHost);
-
-		// Send the request to the manifest URL
-		HTTPClientSession session(uri.getHost(), uri.getPort());
-		session.setTimeout(Timespan(10, 0)); // Set a timeout for the request
-
-		// Send the request and get the response
-		session.sendRequest(manifestRequest);
-
-		HTTPResponse manifestResponse;
-		std::istream& manifestResponseStream = session.receiveResponse(manifestResponse);
-
-		std::ostringstream buffer;
-		StreamCopier::copyStream(manifestResponseStream, buffer);
-		std::string bodyStr = buffer.str();
-		std::string bodyStrNew = processSubtitleData(bodyStr);
-
-		response.setStatus(manifestResponse.getStatus());
-
-		for (const auto& header : manifestResponse)
-			response.set(header.first, header.second);
-
-		// Calculate Content-Length
-		response.setContentLength(static_cast<LONGLONG>(bodyStrNew.size()));
-
-		std::ostream& responseBody = response.send();
-		responseBody.write(bodyStrNew.data(), static_cast<LONGLONG>(bodyStrNew.size()));
+		catch (Poco::Exception& ex)
+		{
+			logger.error("Exception happened when handling client manifest request! (%s)", ex.displayText());
+			response.setStatus(HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
+			response.send();
+		}
 	}
 	else
 	{
