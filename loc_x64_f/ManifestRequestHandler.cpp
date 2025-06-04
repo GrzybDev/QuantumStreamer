@@ -30,6 +30,17 @@ void ManifestRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request
 
 	if (localManifest.empty())
 	{
+		if (app.config().getBool("Server.OfflineMode", false))
+		{
+			Logger& logger = Logger::get("Server");
+			logger.warning("Offline mode is enabled, but the requested manifest is not available locally: %s",
+			               _episodeId);
+
+			response.setStatus(HTTPResponse::HTTP_NOT_ACCEPTABLE);
+			response.send();
+			return;
+		}
+
 		// Call the manifest URL keeping all headers, query parameters, and body intact
 		// The only thing we need to change is the Host header to the manifest URL's host
 

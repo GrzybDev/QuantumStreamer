@@ -80,6 +80,7 @@ In the config, you can set following values (dot seperates section and key)
 | Server.EpisodesPath			| Path to where episodes data are located																	| Any string															| `./videos/episodes`				|
 | Server.MaxQueued				| Max queued HTTP requests																					| Integer																| `100`								|
 | Server.MaxThreads				| Max threads (HTTP server)																					| Integer																| `16`								|
+| Server.OfflineMode			| Disable online streaming, episodes stored locally will continue to work.									| Boolean (true/false)													| `false`							|
 | Server.Port					| Port for HTTP server (game also have to point to this port)												| Unsigned short (Range 0-65535)										| `10000`							|
 | Server.VideoListPath			| Path to original `videoList.rmdj`																			| Any string															| `./data/videoList_original.rmdj`	|
 | Subtitles.ClosedCaptioning	| If `false`, remove closed captions from subtitles															| Boolean (true/false)													| `false`							|
