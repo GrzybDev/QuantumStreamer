@@ -6,10 +6,12 @@ Table of Contents
 -----------------
 - [Game Info](#game-info)
 - [Legal notes](#legal-notes)
+- [Features](#features)
 - [Build Requirements](#build-requirements)
 - [Compiling](#compiling)
 - [Installing](#installing)
 - [Configuration](#configuration)
+- [Usage](#usage)
 - [Credits](#credits)
 
 Game Info
@@ -33,6 +35,15 @@ Legal notes
 - The project doesn't contain ***any*** original assets from the game!
 - To use this project you need to have an original copy of the game (bought from [Steam](https://store.steampowered.com/app/474960/Quantum_Break/)), the project doesn't make piracy easier and doesn't break any of the DRM included in-game.
 
+Features
+--------
+
+- Offline playback (see [QuantumFetcher](https://github.com/GrzybDev/QuantumFetcher.git))
+- Subtitles override support (you can translate/edit subtitles in episodes, please use [QuantumFetcher](https://github.com/GrzybDev/QuantumFetcher.git) to get the original subtitles)
+- Dynamically add/remove closed captions
+- Dynamically add/remove music notes in captions
+- Dynamically add/remove episode title caption to title card
+
 Build Requirements
 ------------------
 
@@ -52,7 +63,7 @@ See [build workflow](https://github.com/GrzybDev/QuantumStreamer/blob/main/.gith
 Installing
 ----------
 
-Copy all `dll` files from either the latest build in [GitHub Releases](https://github.com/GrzybDev/QuantumStreamer/releases) or from `Release` folder if you compiled it yourself to the game root folder (where `exe` file is located)
+Copy `loc_x64_f.dll` file from either the latest build in [GitHub Releases](https://github.com/GrzybDev/QuantumStreamer/releases) or from `Release` folder if you compiled it yourself to the game root folder (where `exe` file is located)
 
 Configuration
 -------------
@@ -87,6 +98,40 @@ In the config, you can set following values (dot seperates section and key)
 | Subtitles.MusicNotes			| If `false`, remove music notes from subtitles																| Boolean (true/false)													| `true`							|
 | Subtitles.EpisodeNames		| If `true`, append episode name to video stream															| Boolean (true/false)													| `true`							|
 
+The default config should work for most of the users, but if you have special requirements you can change above settings.
+
+Example config that will disable online streaming and enables Closed Captioning:
+
+```
+[Server]
+OfflineMode=false
+
+[Subtitles]
+ClosedCaptioning=true
+```
+
+Usage
+-----
+
+Initially, after installing the hook, with default config - nothing should change in-game.
+Quantum Streamer on game launch will load `Server.VideoListPath`, after that hook will scan `Server.EpisodesPath` directory for the locally stored episodes and/or captions_overrides.
+
+Each episode data is expected to be in dedicated episode directory (e.g. `./videos/episodes/J1A-X1-X2` is where hook will look for episode `J1A-X1-X2` (assuming `Server.EpisodesPath` is not changed))
+Local episodes are expected to be in ISM Smooth Stream format:
+
+`*.ism` (Server Manifest) should at least define `clientManifestRelativePath` in `head` section which should reference filename/relative path for client manifest file.
+All media files referenced in the Server Manifest will be loaded (if media file exist)
+
+Additionally, JSON or BSON files which are named `*_captions_override.?son` will be loaded, after that hook will replace captions in specific track (e.g. `enus_captions_override.json` will override `enus_captions` track) with the ones from the file, allowing you to translate or edit captions in the live action.
+
+Both JSON and BSON files are expected to have the same structure, example:
+
+```
+{
+  "episode_title": "Episode title goes here",
+  "segments": ["This is segment 0 (s0)", "This is segment 1 (s1)"]
+}
+```
 
 Credits
 -------
