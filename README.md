@@ -63,7 +63,8 @@ See [build workflow](https://github.com/GrzybDev/QuantumStreamer/blob/main/.gith
 Installing
 ----------
 
-Copy `loc_x64_f.dll` file from either the latest build in [GitHub Releases](https://github.com/GrzybDev/QuantumStreamer/releases) or from `Release` folder if you compiled it yourself to the game root folder (where `exe` file is located)
+- Rename original `loc_x64_f.dll` to `loc_x64_f_o.dll`
+- Copy `loc_x64_f.dll` file from either the latest build in [GitHub Releases](https://github.com/GrzybDev/QuantumStreamer/releases) or from `Release` folder if you compiled it yourself
 
 Configuration
 -------------
