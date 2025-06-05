@@ -1,5 +1,9 @@
 #pragma once
 
+static constexpr unsigned char VERSION_MAJOR = 1;
+static constexpr unsigned char VERSION_MINOR = 0;
+static constexpr unsigned char VERSION_REVISION = 0;
+
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 
 // Standard C++ Header Files
