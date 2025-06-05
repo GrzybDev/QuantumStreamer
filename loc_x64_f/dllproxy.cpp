@@ -36,14 +36,14 @@ t_loadFromBinary real_loadFromBinary = nullptr;
 t_loadFromXML_RMD_Format real_loadFromXML_RMD_Format = nullptr;
 t_loadFromXml_RMD_Format real_loadFromXml_RMD_Format = nullptr;
 
-VOID LoadOriginalDll()
+void LoadOriginalDll()
 {
 	if (originalDll) return; // Already loaded
 
 	logger.information("Loading Original DLL...");
 
-	Application& app = Application::instance();
-	std::string dllName = app.config().getString("Hook.OriginalLibraryName", "loc_x64_f_o.dll");
+	const Application& app = Application::instance();
+	const std::string dllName = app.config().getString("Hook.OriginalLibraryName", "loc_x64_f_o.dll");
 
 	originalDll = LoadLibraryA(dllName.c_str());
 
@@ -51,7 +51,7 @@ VOID LoadOriginalDll()
 	{
 		logger.fatal("Failed to load original DLL: '%s'. Hooking is not possible!", dllName);
 
-		std::string msgBoxErrorText =
+		const std::string msgBoxErrorText =
 			"Failed to load original game library!\nAccording to your config original loc_x64_f.dll file should be named "
 			+ dllName + ", hooking is not possible without original file!\n\nGame will now exit.";
 		MessageBoxA(nullptr, msgBoxErrorText.c_str(), "Quantum Streamer - Fatal Error!", MB_OK | MB_ICONERROR);

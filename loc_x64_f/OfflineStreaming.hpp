@@ -5,9 +5,9 @@ class OfflineStreaming : public Poco::Util::Subsystem
 public:
 	const char* name() const override;
 
-	std::string GetLocalClientManifest(std::string episodeId);
-	std::string GetLocalFragment(std::string episodeId, std::string trackName, std::string bitrate,
-	                             std::string startTime);
+	std::string GetLocalClientManifest(const std::string& episodeId);
+	std::string GetLocalFragment(const std::string& episodeId, const std::string& trackName, const std::string& bitrate,
+	                             const std::string& startTime);
 
 protected:
 	void initialize(Poco::Util::Application& app) override;
@@ -16,16 +16,16 @@ protected:
 private:
 	struct SmoothFragment
 	{
-		ULONGLONG moofOffset;
-		ULONGLONG trafNumber;
-		ULONGLONG trunNumber;
-		ULONGLONG sampleNumber;
+		unsigned long long moofOffset;
+		unsigned long long trafNumber;
+		unsigned long long trunNumber;
+		unsigned long long sampleNumber;
 	};
 
 	struct SmoothTrack
 	{
 		char version;
-		UINT trackId;
+		unsigned int trackId;
 		int lengthSizeOfTrafNum;
 		int lengthSizeOfTrunNum;
 		int lengthSizeOfSampleNum;
@@ -47,7 +47,7 @@ private:
 
 	std::map<std::string, SmoothStream> _streams;
 
-	void processMediaNodes(const std::string& tagName, Poco::XML::Document* doc, std::string episodeId,
-	                       std::string episodePath, SmoothStream& stream);
-	std::pair<bool, SmoothTrack> preloadTrack(std::string path);
+	void processMediaNodes(const std::string& tagName, Poco::XML::Document* doc, const std::string& episodeId,
+	                       const std::string& episodePath, SmoothStream& stream);
+	std::pair<bool, SmoothTrack> preloadTrack(const std::string& path);
 };

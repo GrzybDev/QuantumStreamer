@@ -51,7 +51,7 @@ void SubtitleFragmentRequestHandler::handleRequest(HTTPServerRequest& request, H
 
 		if (app.config().getBool("Server.OfflineMode", false))
 		{
-			logger.warning("Offline mode is enabled, but the requested fragment is not available locally: %s",
+			logger.warning("Offline mode is enabled, but the requested subtitle fragment is not available locally: %s",
 			               _episodeId);
 
 			response.setStatus(HTTPResponse::HTTP_NOT_ACCEPTABLE);
@@ -59,10 +59,10 @@ void SubtitleFragmentRequestHandler::handleRequest(HTTPServerRequest& request, H
 			return;
 		}
 
-		// Call the manifest URL keeping all headers, query parameters, and body intact
-		// The only thing we need to change is the Host header to the manifest URL's host
+		// Call the fragment URL keeping all headers, query parameters, and body intact
+		// The only thing we need to change is the Host header to the fragment URL's host
 
-		// Parse manifest URL to extract the host
+		// Parse fragment URL to extract the host
 		URI uri(fragmentUrl);
 		const std::string& fragmentHost = uri.getHost();
 
@@ -70,7 +70,7 @@ void SubtitleFragmentRequestHandler::handleRequest(HTTPServerRequest& request, H
 		{
 			HTTPRequest fragmentRequest(HTTPRequest::HTTP_GET, fragmentUrl, HTTPMessage::HTTP_1_1);
 
-			// Copy headers from the original request to the manifest request
+			// Copy headers from the original request to the fragment request
 			for (const auto& [key, value] : request)
 			{
 				if (key != "Host")
@@ -79,10 +79,11 @@ void SubtitleFragmentRequestHandler::handleRequest(HTTPServerRequest& request, H
 					fragmentRequest.set(key, value);
 				}
 			}
-			// Set the Host header to the manifest URL's host
+
+			// Set the Host header to the fragment URL's host
 			fragmentRequest.set("Host", fragmentHost);
 
-			// Send the request to the manifest URL
+			// Send the request to the fragment URL
 			HTTPClientSession session(uri.getHost(), uri.getPort());
 
 			// Set a timeout for the request (Game seems to use 20 seconds till it tries to retry)
@@ -92,10 +93,10 @@ void SubtitleFragmentRequestHandler::handleRequest(HTTPServerRequest& request, H
 			session.sendRequest(fragmentRequest);
 
 			HTTPResponse fragmentResponse;
-			std::istream& manifestResponseStream = session.receiveResponse(fragmentResponse);
+			std::istream& fragmentResponseStream = session.receiveResponse(fragmentResponse);
 
 			std::ostringstream buffer;
-			StreamCopier::copyStream(manifestResponseStream, buffer);
+			StreamCopier::copyStream(fragmentResponseStream, buffer);
 			std::string bodyStr = buffer.str();
 			std::string bodyStrNew = processSubtitleData(bodyStr);
 
@@ -110,18 +111,18 @@ void SubtitleFragmentRequestHandler::handleRequest(HTTPServerRequest& request, H
 
 			response.setStatus(responseStatus);
 
-			for (const auto& header : fragmentResponse)
-				response.set(header.first, header.second);
+			for (const auto& [key, value] : fragmentResponse)
+				response.set(key, value);
 
 			// Calculate Content-Length
-			response.setContentLength(static_cast<LONGLONG>(bodyStrNew.size()));
+			response.setContentLength(static_cast<long long>(bodyStrNew.size()));
 
 			std::ostream& responseBody = response.send();
-			responseBody.write(bodyStrNew.data(), static_cast<LONGLONG>(bodyStrNew.size()));
+			responseBody.write(bodyStrNew.data(), static_cast<long long>(bodyStrNew.size()));
 		}
 		catch (Poco::Exception& ex)
 		{
-			logger.error("Exception happened when handling client manifest request! (%s)", ex.displayText());
+			logger.error("Exception happened when handling client fragment request! (%s)", ex.displayText());
 			response.setStatus(HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
 			response.send();
 		}
@@ -129,10 +130,10 @@ void SubtitleFragmentRequestHandler::handleRequest(HTTPServerRequest& request, H
 	else
 	{
 		std::string newLocalFragment = processSubtitleData(localFragment);
-		response.setContentLength(static_cast<LONGLONG>(newLocalFragment.size()));
+		response.setContentLength(static_cast<long long>(newLocalFragment.size()));
 
 		std::ostream& responseBody = response.send();
-		responseBody.write(newLocalFragment.data(), static_cast<LONGLONG>(newLocalFragment.size()));
+		responseBody.write(newLocalFragment.data(), static_cast<long long>(newLocalFragment.size()));
 	}
 }
 
@@ -141,14 +142,14 @@ std::string SubtitleFragmentRequestHandler::processSubtitleData(const std::strin
 	const auto bytesData = new char[data.size()];
 	memcpy(bytesData, data.data(), data.size()); // NOLINT(bugprone-not-null-terminated-result)
 
-	UINT moofSize;
+	unsigned int moofSize;
 	memcpy(&moofSize, bytesData, 4);
 	moofSize = _byteswap_ulong(moofSize);
 
 	const auto moofBlock = new char[moofSize];
 	memcpy(moofBlock, bytesData, moofSize);
 
-	UINT mdatSize;
+	unsigned int mdatSize;
 	memcpy(&mdatSize, bytesData + moofSize, 4);
 	mdatSize = _byteswap_ulong(mdatSize);
 
@@ -167,7 +168,7 @@ std::string SubtitleFragmentRequestHandler::processSubtitleData(const std::strin
 		_episodeId, _langCode + "_captions", subtitleData,
 		_startTime == "80080000");
 
-	mdatSize = static_cast<UINT>(newSubtitleData.size() + 8);
+	mdatSize = static_cast<unsigned int>(newSubtitleData.size() + 8);
 
 	// delete original mdat
 	delete[] mdatBlock;

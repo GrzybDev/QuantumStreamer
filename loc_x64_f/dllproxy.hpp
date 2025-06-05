@@ -2,7 +2,7 @@
 
 // Handle to the original DLL and function to load it  
 extern HMODULE originalDll;
-VOID LoadOriginalDll();
+void LoadOriginalDll();
 
 // Forward declarations of classes and structs used in the proxy  
 struct Document;

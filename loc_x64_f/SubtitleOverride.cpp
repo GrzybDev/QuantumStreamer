@@ -42,13 +42,11 @@ void SubtitleOverride::initialize(Application& app)
 	logger.information("Music notes are %s", std::string(_musicNotes ? "enabled" : "disabled"));
 	logger.information("%s add episode titles to streams", std::string(_episodeNames ? "Will" : "Will NOT"));
 
-	std::string episodesPath = app.config().getString("Server.EpisodesPath", "./videos/episodes");
+	const std::string episodesPath = app.config().getString("Server.EpisodesPath", "./videos/episodes");
 	VideoList& videoList = app.getSubsystem<VideoList>();
 
-	auto episodes = videoList.getEpisodeList();
-
 	// Check if the episodes path exists
-	for (const auto& episode : episodes)
+	for (const auto episodes = videoList.getEpisodeList(); const auto& episode : episodes)
 	{
 		File episodeDir(episodesPath + "/" + episode);
 		if (!(episodeDir.exists() && episodeDir.isDirectory())) continue;
@@ -116,7 +114,7 @@ void SubtitleOverride::parseJsonOverride(const std::string& path, const std::str
 
 	std::vector<std::string> segments;
 	for (size_t i = 0; i < segmentsArray->size(); ++i)
-		segments.push_back(segmentsArray->getElement<std::string>(static_cast<UINT>(i)));
+		segments.push_back(segmentsArray->getElement<std::string>(static_cast<unsigned int>(i)));
 
 	std::string captionKey = extractCaptionKey(fileName);
 	overrides[captionKey] = std::move(segments);
@@ -221,12 +219,12 @@ std::string SubtitleOverride::OverrideSubtitles(const std::string& episodeId, co
 		}
 	}
 
-	for (ULONG i = 0; i < divs->length(); ++i)
+	for (unsigned long i = 0; i < divs->length(); ++i)
 	{
 		auto div = dynamic_cast<Element*>(divs->item(i));
 		AutoPtr ps = div->getElementsByTagName("p");
 
-		for (ULONG j = 0; j < ps->length(); ++j)
+		for (unsigned long j = 0; j < ps->length(); ++j)
 		{
 			auto p = dynamic_cast<Element*>(ps->item(j));
 			auto span = dynamic_cast<Element*>(p->getElementsByTagName("span")->item(0));

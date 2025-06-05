@@ -16,7 +16,7 @@ void VideoList::initialize(Application& app)
 {
 	Logger& logger = Logger::get("Server");
 
-	std::string videoListPath = app.config().getString("Server.VideoListPath", "./data/videoList_original.rmdj");
+	const std::string videoListPath = app.config().getString("Server.VideoListPath", "./data/videoList_original.rmdj");
 	logger.debug("Loading video list (from %s)...", videoListPath);
 
 	std::ifstream videoListStream(videoListPath, std::ios::binary);
@@ -35,10 +35,10 @@ void VideoList::initialize(Application& app)
 	for (size_t i = 0; i < videoListData.size(); ++i)
 		videoListData[i] ^= RMDJEncryptionKey[i % 32]; // NOLINT(cppcoreguidelines-narrowing-conversions)
 
-	auto tempVideoListStr = std::string(videoListData.begin(), videoListData.end());
+	const auto tempVideoListStr = std::string(videoListData.begin(), videoListData.end());
 
 	Parser parser;
-	Var result = parser.parse(tempVideoListStr);
+	const Var result = parser.parse(tempVideoListStr);
 
 	videoList = result.extract<Object::Ptr>();
 
@@ -71,12 +71,11 @@ std::string VideoList::getFragmentUrl(const std::string& episodeId, const std::s
 	if (!videoList->has(episodeId))
 		return {};
 
-	auto manifestUrl = videoList->getValue<std::string>(episodeId);
+	const auto manifestUrl = videoList->getValue<std::string>(episodeId);
 
 	// Replace "manifest" with QualityLevels({bitrate})/Fragments({type}={startTime})
 	std::string fragmentUrl = manifestUrl;
-	size_t pos = fragmentUrl.find("manifest");
-	if (pos != std::string::npos)
+	if (const size_t pos = fragmentUrl.find("manifest"); pos != std::string::npos)
 		fragmentUrl.replace(pos, 8, "QualityLevels(" + bitrate + ")/Fragments(" + type + "=" + startTime + ")");
 	else
 	{

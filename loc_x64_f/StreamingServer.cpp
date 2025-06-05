@@ -20,8 +20,7 @@ using Poco::Net::HTTPServer;
 using Poco::Net::HTTPServerParams;
 using Poco::Util::Application;
 
-
-VOID StreamingServer::initialize(Application& self)
+void StreamingServer::initialize(Application& self)
 {
 	loadConfiguration();
 	initLoggers();
@@ -39,12 +38,12 @@ VOID StreamingServer::initialize(Application& self)
 	ServerApplication::initialize(self);
 }
 
-VOID StreamingServer::uninitialize()
+void StreamingServer::uninitialize()
 {
 	ServerApplication::uninitialize();
 }
 
-VOID StreamingServer::initLoggers() const
+void StreamingServer::initLoggers() const
 {
 	const bool showConsole = config().getBool("Logger.ShowConsole", false);
 	const bool saveToLogFile = config().getBool("Logger.SaveToLogFile", false);
@@ -75,20 +74,20 @@ VOID StreamingServer::initLoggers() const
 	// Create a FormattingChannel that wraps ConsoleChannel
 	const AutoPtr pFormattingChannel = new FormattingChannel(pFormatter, pSplitterChannel);
 
-	const int logLevel_Hook = config().getInt("Logger.LogLevel_Hook", Message::PRIO_FATAL);
-	const int logLevel_Server = config().getInt("Logger.LogLevel_Server", Message::PRIO_INFORMATION);
-	const int logLevel_HTTP = config().getInt("Logger.LogLevel_HTTP", Message::PRIO_FATAL);
+	const int logLevelHook = config().getInt("Logger.LogLevel_Hook", Message::PRIO_FATAL);
+	const int logLevelServer = config().getInt("Logger.LogLevel_Server", Message::PRIO_INFORMATION);
+	const int logLevelHttp = config().getInt("Logger.LogLevel_HTTP", Message::PRIO_FATAL);
 
 	Logger& hookLogger = Logger::get("Hook");
 	hookLogger.setChannel(pFormattingChannel);
-	hookLogger.setLevel(logLevel_Hook);
+	hookLogger.setLevel(logLevelHook);
 
-	Logger::create("Server", pFormattingChannel, logLevel_Server);
-	Logger::create("HTTP", pFormattingChannel, logLevel_HTTP);
+	Logger::create("Server", pFormattingChannel, logLevelServer);
+	Logger::create("HTTP", pFormattingChannel, logLevelHttp);
 }
 
 
-VOID StreamingServer::createConsole()
+void StreamingServer::createConsole()
 {
 	// Create a console for Debug output
 	AllocConsole();
@@ -125,14 +124,14 @@ VOID StreamingServer::createConsole()
 }
 
 
-INT StreamingServer::main(const std::vector<std::string>& args)
+int StreamingServer::main(const std::vector<std::string>& args)
 {
-	const USHORT port = static_cast<USHORT>(config().getInt("Server.Port", 10000));
+	const unsigned short port = static_cast<unsigned short>(config().getInt("Server.Port", 10000));
 
 	Logger& logger = Logger::get("Server");
 	logger.debug("Initializing HTTP Server...");
 
-	UINT n = std::thread::hardware_concurrency();
+	unsigned int n = std::thread::hardware_concurrency();
 
 	if (n == 0)
 	{
@@ -142,7 +141,7 @@ INT StreamingServer::main(const std::vector<std::string>& args)
 	}
 
 	const int maxQueued = config().getInt("Server.MaxQueued", 100);
-	const int maxThreads = config().getInt("Server.MaxThreads", static_cast<INT>(n));
+	const int maxThreads = config().getInt("Server.MaxThreads", static_cast<int>(n));
 	ThreadPool::defaultPool().addCapacity(maxThreads);
 
 	const auto pParams = new HTTPServerParams;

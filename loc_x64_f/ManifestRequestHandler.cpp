@@ -63,14 +63,15 @@ void ManifestRequestHandler::handleRequest(HTTPServerRequest& request, HTTPServe
 			HTTPRequest manifestRequest(HTTPRequest::HTTP_GET, manifestUrl, HTTPMessage::HTTP_1_1);
 
 			// Copy headers from the original request to the manifest request
-			for (const auto& header : request)
+			for (const auto& [key, value] : request)
 			{
-				if (header.first != "Host")
+				if (key != "Host")
 				{
 					// Skip Host header, we'll set it later
-					manifestRequest.set(header.first, header.second);
+					manifestRequest.set(key, value);
 				}
 			}
+
 			// Set the Host header to the manifest URL's host
 			manifestRequest.set("Host", manifestHost);
 
@@ -101,11 +102,11 @@ void ManifestRequestHandler::handleRequest(HTTPServerRequest& request, HTTPServe
 
 			response.setStatus(responseStatus);
 
-			for (const auto& header : manifestResponse)
-				response.set(header.first, header.second);
+			for (const auto& [key, value] : manifestResponse)
+				response.set(key, value);
 
 			std::ostream& responseBody = response.send();
-			responseBody.write(bodyStr.data(), static_cast<LONGLONG>(bodyStr.size()));
+			responseBody.write(bodyStr.data(), static_cast<long long>(bodyStr.size()));
 		}
 		catch (Poco::Exception& ex)
 		{
@@ -116,9 +117,9 @@ void ManifestRequestHandler::handleRequest(HTTPServerRequest& request, HTTPServe
 	}
 	else
 	{
-		response.setContentLength(static_cast<LONGLONG>(localManifest.size()));
+		response.setContentLength(static_cast<long long>(localManifest.size()));
 
 		std::ostream& responseBody = response.send();
-		responseBody.write(localManifest.data(), static_cast<LONGLONG>(localManifest.size()));
+		responseBody.write(localManifest.data(), static_cast<long long>(localManifest.size()));
 	}
 }

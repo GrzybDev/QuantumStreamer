@@ -28,10 +28,9 @@ void OfflineStreaming::initialize(Application& app)
 
 	std::string episodesPath = app.config().getString("Server.EpisodesPath", "./videos/episodes");
 	VideoList& videoList = app.getSubsystem<VideoList>();
-	auto episodes = videoList.getEpisodeList();
 
 	// Check if the episodes path exists
-	for (const auto& episode : episodes)
+	for (auto episodes = videoList.getEpisodeList(); const auto& episode : episodes)
 	{
 		Path episodePath(episodesPath);
 		episodePath.append(episode);
@@ -67,7 +66,7 @@ void OfflineStreaming::initialize(Application& app)
 				continue;
 			}
 
-			auto* metaElem = static_cast<Element*>(metaNode);
+			auto* metaElem = dynamic_cast<Element*>(metaNode);
 			Path clientManifestPath = episodePath;
 			clientManifestPath.append(metaElem->getAttribute("content"));
 			stream.clientManifestRelativePath = clientManifestPath;
@@ -86,15 +85,15 @@ void OfflineStreaming::uninitialize()
 	_streams.clear();
 }
 
-void OfflineStreaming::processMediaNodes(const std::string& tagName, XMLDocument* doc, std::string episodeId,
-                                         std::string episodePath, SmoothStream& stream)
+void OfflineStreaming::processMediaNodes(const std::string& tagName, XMLDocument* doc, const std::string& episodeId,
+                                         const std::string& episodePath, SmoothStream& stream)
 {
 	Logger& logger = Logger::get("Server");
 
 	NodeList* nodes = doc->getElementsByTagName(tagName);
 	for (unsigned long i = 0; i < nodes->length(); ++i)
 	{
-		auto* elem = static_cast<Element*>(nodes->item(i));
+		auto* elem = dynamic_cast<Element*>(nodes->item(i));
 		std::string src = elem->getAttribute("src");
 		std::string bitrate = elem->getAttribute("systemBitrate");
 
@@ -104,8 +103,7 @@ void OfflineStreaming::processMediaNodes(const std::string& tagName, XMLDocument
 			NodeList* params = elem->getElementsByTagName("param");
 			for (unsigned long j = 0; j < params->length(); ++j)
 			{
-				auto* param = static_cast<Element*>(params->item(j));
-				if (param->getAttribute("name") == "trackName")
+				if (auto* param = dynamic_cast<Element*>(params->item(j)); param->getAttribute("name") == "trackName")
 				{
 					trackName = param->getAttribute("value");
 					break;
@@ -121,11 +119,10 @@ void OfflineStreaming::processMediaNodes(const std::string& tagName, XMLDocument
 		SmoothMedia media;
 		media.sourceFile = fullPath;
 		media.systemBitrate = bitrate;
-		auto track = preloadTrack(fullPath.toString());
 
-		if (track.first)
+		if (auto [success, track] = preloadTrack(fullPath.toString()); success)
 		{
-			media.track[bitrate] = track.second;
+			media.track[bitrate] = track;
 			stream.mediaMap[trackName] = media;
 			logger.debug("Preloaded %s track '%s' for episode %s from %s with bitrate %s", tagName, trackName,
 			             episodeId, fullPath.toString(), bitrate);
@@ -133,7 +130,7 @@ void OfflineStreaming::processMediaNodes(const std::string& tagName, XMLDocument
 	}
 }
 
-std::pair<bool, OfflineStreaming::SmoothTrack> OfflineStreaming::preloadTrack(std::string path)
+std::pair<bool, OfflineStreaming::SmoothTrack> OfflineStreaming::preloadTrack(const std::string& path)
 {
 	Logger& logger = Logger::get("Server");
 
@@ -152,14 +149,14 @@ std::pair<bool, OfflineStreaming::SmoothTrack> OfflineStreaming::preloadTrack(st
 	// Read mfro box
 	trackStream.seekg(-4, std::ios::end);
 
-	UINT mfroSize;
+	unsigned int mfroSize;
 	trackStream.read(reinterpret_cast<char*>(&mfroSize), 4);
 	mfroSize = _byteswap_ulong(mfroSize);
 
 	trackStream.seekg(-static_cast<INT>(mfroSize), std::ios::end);
 
 	// Read mfra box
-	UINT mfraBlockSize;
+	unsigned int mfraBlockSize;
 	trackStream.read(reinterpret_cast<char*>(&mfraBlockSize), 4);
 	mfraBlockSize = _byteswap_ulong(mfraBlockSize);
 
@@ -185,7 +182,7 @@ std::pair<bool, OfflineStreaming::SmoothTrack> OfflineStreaming::preloadTrack(st
 	}
 
 	// Read tfra box
-	UINT tfraSize;
+	unsigned int tfraSize;
 	trackStream.read(reinterpret_cast<char*>(&tfraSize), 4);
 	tfraSize = _byteswap_ulong(tfraSize);
 
@@ -206,58 +203,58 @@ std::pair<bool, OfflineStreaming::SmoothTrack> OfflineStreaming::preloadTrack(st
 	// Skip flags
 	trackStream.seekg(3, std::ios::cur);
 
-	UINT trackId;
+	unsigned int trackId;
 	trackStream.read(reinterpret_cast<char*>(&trackId), 4);
 	track.trackId = _byteswap_ulong(trackId);
 
-	INT temp;
+	int temp;
 	trackStream.read(reinterpret_cast<char*>(&temp), 4);
 	track.lengthSizeOfTrafNum = ((temp & 0x3F) >> 4) + 1;
 	track.lengthSizeOfTrunNum = ((temp & 0xC) >> 2) + 1;
 	track.lengthSizeOfSampleNum = ((temp & 0x3)) + 1;
 
-	UINT numberOfEntries;
+	unsigned int numberOfEntries;
 	trackStream.read(reinterpret_cast<char*>(&numberOfEntries), 4);
 	numberOfEntries = _byteswap_ulong(numberOfEntries);
 
 	std::map<std::string, SmoothFragment> fragments;
 
-	for (UINT i = 0; i < numberOfEntries; i++)
+	for (unsigned int i = 0; i < numberOfEntries; i++)
 	{
 		SmoothFragment fragment{};
 
-		ULONGLONG startTime;
+		unsigned long long startTime;
 
 		if (version == 1)
 		{
-			ULONGLONG time;
+			unsigned long long time;
 			trackStream.read(reinterpret_cast<char*>(&time), 8);
 			startTime = _byteswap_uint64(time);
 
-			ULONGLONG moofOffset;
+			unsigned long long moofOffset;
 			trackStream.read(reinterpret_cast<char*>(&moofOffset), 8);
 			fragment.moofOffset = _byteswap_uint64(moofOffset);
 		}
 		else
 		{
-			UINT time;
+			unsigned int time;
 			trackStream.read(reinterpret_cast<char*>(&time), 4);
 			startTime = _byteswap_ulong(time);
 
-			UINT moofOffset;
+			unsigned int moofOffset;
 			trackStream.read(reinterpret_cast<char*>(&moofOffset), 4);
 			fragment.moofOffset = _byteswap_ulong(moofOffset);
 		}
 
-		ULONGLONG trafNumber;
+		unsigned long long trafNumber;
 		trackStream.read(reinterpret_cast<char*>(&trafNumber), track.lengthSizeOfTrafNum);
 		fragment.trafNumber = _byteswap_uint64(trafNumber);
 
-		ULONGLONG trunNumber;
+		unsigned long long trunNumber;
 		trackStream.read(reinterpret_cast<char*>(&trunNumber), track.lengthSizeOfTrunNum);
 		fragment.trunNumber = _byteswap_uint64(trunNumber);
 
-		ULONGLONG sampleNumber;
+		unsigned long long sampleNumber;
 		trackStream.read(reinterpret_cast<char*>(&sampleNumber), track.lengthSizeOfSampleNum);
 		fragment.sampleNumber = _byteswap_uint64(sampleNumber);
 
@@ -271,7 +268,7 @@ std::pair<bool, OfflineStreaming::SmoothTrack> OfflineStreaming::preloadTrack(st
 	return {success, track};
 }
 
-std::string OfflineStreaming::GetLocalClientManifest(std::string episodeId)
+std::string OfflineStreaming::GetLocalClientManifest(const std::string& episodeId)
 {
 	if (!_streams.contains(episodeId))
 		return "";
@@ -299,20 +296,21 @@ std::string OfflineStreaming::GetLocalClientManifest(std::string episodeId)
 	return buffer.str();
 }
 
-std::string OfflineStreaming::GetLocalFragment(std::string episodeId, std::string trackName, std::string bitrate,
-                                               std::string startTime)
+std::string OfflineStreaming::GetLocalFragment(const std::string& episodeId, const std::string& trackName,
+                                               const std::string& bitrate,
+                                               const std::string& startTime)
 {
 	if (!_streams.contains(episodeId))
 		return {};
 
 	Logger& logger = Logger::get("Server");
 
-	SmoothStream stream = _streams[episodeId];
+	auto [clientManifestRelativePath, mediaMap] = _streams[episodeId];
 
-	if (!stream.mediaMap.contains(trackName))
+	if (!mediaMap.contains(trackName))
 		return {};
 
-	SmoothMedia media = stream.mediaMap[trackName];
+	SmoothMedia media = mediaMap[trackName];
 
 	if (!media.track.contains(bitrate))
 		return {};
@@ -336,7 +334,7 @@ std::string OfflineStreaming::GetLocalFragment(std::string episodeId, std::strin
 		return {};
 	}
 
-	fragmentStream.seekg(static_cast<LONGLONG>(fragment.moofOffset));
+	fragmentStream.seekg(static_cast<long long>(fragment.moofOffset));
 
 	unsigned int moofSize;
 	fragmentStream.read(reinterpret_cast<char*>(&moofSize), 4);
@@ -369,7 +367,7 @@ std::string OfflineStreaming::GetLocalFragment(std::string episodeId, std::strin
 	mdatSize = _byteswap_ulong(mdatSize);
 
 	std::string mdatMagic(4, '\0');
-	fragmentStream.read(&mdatMagic[0], 4);
+	fragmentStream.read(mdatMagic.data(), 4);
 
 	if (mdatMagic != "mdat")
 	{

@@ -55,43 +55,44 @@ void FragmentRequestHandler::handleRequest(HTTPServerRequest& request, HTTPServe
 			return;
 		}
 
-		// Call the manifest URL keeping all headers, query parameters, and body intact
-		// The only thing we need to change is the Host header to the manifest URL's host
+		// Call the fragment URL keeping all headers, query parameters, and body intact
+		// The only thing we need to change is the Host header to the fragment URL's host
 
-		// Parse manifest URL to extract the host
+		// Parse fragment URL to extract the host
 		URI uri(fragmentUrl);
-		const std::string& manifestHost = uri.getHost();
+		const std::string& fragmentHost = uri.getHost();
 
 		try
 		{
 			HTTPRequest fragmentRequest(HTTPRequest::HTTP_GET, fragmentUrl, HTTPMessage::HTTP_1_1);
 
-			// Copy headers from the original request to the manifest request
-			for (const auto& header : request)
+			// Copy headers from the original request to the fragment request
+			for (const auto& [key, value] : request)
 			{
-				if (header.first != "Host")
+				if (key != "Host")
 				{
 					// Skip Host header, we'll set it later
-					fragmentRequest.set(header.first, header.second);
+					fragmentRequest.set(key, value);
 				}
 			}
-			// Set the Host header to the manifest URL's host
-			fragmentRequest.set("Host", manifestHost);
 
-			// Send the request to the manifest URL
+			// Set the Host header to the fragment URL's host
+			fragmentRequest.set("Host", fragmentHost);
+
+			// Send the request to the fragment URL
 			HTTPClientSession session(uri.getHost(), uri.getPort());
 
-			// Set a timeout for the request (Game seems to use 20 seconds till it tries to retry
+			// Set a timeout for the request (Game seems to use 20 seconds till it tries to retry)
 			session.setTimeout(Timespan(20, 0));
 
 			// Send the request and get the response
 			session.sendRequest(fragmentRequest);
 
 			HTTPResponse fragmentResponse;
-			std::istream& manifestResponseStream = session.receiveResponse(fragmentResponse);
+			std::istream& fragmentResponseStream = session.receiveResponse(fragmentResponse);
 
 			std::ostringstream buffer;
-			StreamCopier::copyStream(manifestResponseStream, buffer);
+			StreamCopier::copyStream(fragmentResponseStream, buffer);
 			std::string bodyStr = buffer.str();
 
 			auto responseStatus = fragmentResponse.getStatus();
@@ -109,20 +110,20 @@ void FragmentRequestHandler::handleRequest(HTTPServerRequest& request, HTTPServe
 				response.set(key, value);
 
 			std::ostream& responseBody = response.send();
-			responseBody.write(bodyStr.data(), static_cast<LONGLONG>(bodyStr.size()));
+			responseBody.write(bodyStr.data(), static_cast<long long>(bodyStr.size()));
 		}
 		catch (Poco::Exception& ex)
 		{
-			logger.error("Exception happened when handling client manifest request! (%s)", ex.displayText());
+			logger.error("Exception happened when handling client fragment request! (%s)", ex.displayText());
 			response.setStatus(HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
 			response.send();
 		}
 	}
 	else
 	{
-		response.setContentLength(static_cast<LONGLONG>(localFragment.size()));
+		response.setContentLength(static_cast<long long>(localFragment.size()));
 
 		std::ostream& responseBody = response.send();
-		responseBody.write(localFragment.data(), static_cast<LONGLONG>(localFragment.size()));
+		responseBody.write(localFragment.data(), static_cast<long long>(localFragment.size()));
 	}
 }
