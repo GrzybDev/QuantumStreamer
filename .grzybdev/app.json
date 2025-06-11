@@ -1,0 +1,6 @@
+{
+	"name": "Quantum Streamer",
+	"project": "pl_quantumbreak",
+	"platforms": ["Windows"],
+	"type": "Hook"
+}
