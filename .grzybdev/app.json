@@ -1,0 +1,5 @@
+{
+	"name": "Quantum Streamer",
+	"platforms": ["Windows"],
+	"type": "Hook"
+}
