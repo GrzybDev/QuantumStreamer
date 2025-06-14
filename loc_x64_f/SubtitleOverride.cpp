@@ -154,7 +154,7 @@ void SubtitleOverride::parseBsonOverride(const std::string& path, const std::str
 	std::vector<std::string> segments;
 	if (document.isType<MongoArray::Ptr>("segments"))
 	{
-		auto array = document.get<MongoArray::Ptr>("segments");
+		auto& array = document.get<MongoArray::Ptr>("segments");
 		for (size_t i = 0; i < array->size(); ++i)
 			segments.push_back(array->get<std::string>(i));
 	}
@@ -182,7 +182,7 @@ std::string SubtitleOverride::OverrideSubtitles(const std::string& episodeId, co
 
 	Logger& logger = Logger::get("Server");
 
-	auto segments = episodeOverrides[trackName];
+	auto& segments = episodeOverrides[trackName];
 
 	std::istringstream xmlStream(dataRaw);
 	InputSource src(xmlStream);
