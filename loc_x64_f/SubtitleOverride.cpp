@@ -67,6 +67,12 @@ void SubtitleOverride::initialize(Application& app)
 				parseBsonOverride(filePath.toString(), fileName, episode, overrides);
 		}
 
+		if (overrides.empty())
+		{
+			logger.warning("No subtitle overrides found for episode %s!", episode);
+			continue;
+		}
+
 		m_subtitleOverrides[episode] = std::move(overrides);
 	}
 
