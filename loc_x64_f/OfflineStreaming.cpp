@@ -116,14 +116,16 @@ void OfflineStreaming::processMediaNodes(const std::string& tagName, XMLDocument
 		if (!fullPath.isFile())
 			continue;
 
+		std::string mediaKey = trackName + "_" + bitrate;
+
 		SmoothMedia media;
 		media.sourceFile = fullPath;
 		media.systemBitrate = bitrate;
 
 		if (auto [success, track] = preloadTrack(fullPath.toString()); success)
 		{
-			media.track[bitrate] = track;
-			stream.mediaMap[trackName] = media;
+			media.track = track;
+			stream.mediaMap[mediaKey] = media;
 			logger.debug("Preloaded %s track '%s' for episode %s from %s with bitrate %s", tagName, trackName,
 			             episodeId, fullPath.toString(), bitrate);
 		}
@@ -305,17 +307,14 @@ std::string OfflineStreaming::GetLocalFragment(const std::string& episodeId, con
 
 	Logger& logger = Logger::get("Server");
 
-	auto [clientManifestRelativePath, mediaMap] = _streams[episodeId];
+	auto& [clientManifestRelativePath, mediaMap] = _streams[episodeId];
+	std::string mediaKey = trackName + "_" + bitrate;
 
-	if (!mediaMap.contains(trackName))
+	if (!mediaMap.contains(mediaKey))
 		return {};
 
-	SmoothMedia media = mediaMap[trackName];
-
-	if (!media.track.contains(bitrate))
-		return {};
-
-	SmoothTrack track = media.track[bitrate];
+	SmoothMedia media = mediaMap[mediaKey];
+	SmoothTrack track = media.track;
 
 	if (!track.fragments.contains(startTime))
 		return {};
@@ -347,7 +346,7 @@ std::string OfflineStreaming::GetLocalFragment(const std::string& episodeId, con
 	{
 		logger.warning(
 			"Invalid moof magic in fragment at start time %s in track %s, expected: moof, got %s. Will need to fetch that fragment from server.",
-			startTime, media.sourceFile, moofMagic);
+			startTime, media.sourceFile.toString(), moofMagic);
 		fragmentStream.close();
 
 		return {};

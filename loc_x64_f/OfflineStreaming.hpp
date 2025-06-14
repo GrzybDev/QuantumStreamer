@@ -36,7 +36,7 @@ private:
 	{
 		Poco::Path sourceFile;
 		std::string systemBitrate;
-		std::map<std::string, SmoothTrack> track;
+		SmoothTrack track;
 	};
 
 	struct SmoothStream
