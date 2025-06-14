@@ -78,6 +78,9 @@ void OfflineStreaming::initialize(Application& app)
 			_streams[episode] = stream;
 		}
 	}
+
+	logger.information("%s episodes are ready to offline playback!",
+		std::to_string(_streams.size()));
 }
 
 void OfflineStreaming::uninitialize()
