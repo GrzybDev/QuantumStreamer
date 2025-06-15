@@ -126,7 +126,13 @@ void SubtitleOverride::parseJsonOverride(const std::string& path, const std::str
 	overrides[captionKey] = std::move(segments);
 
 	if (jsonObject->has("episode_title"))
-		m_episodeNames[episode] = jsonObject->getValue<std::string>("episode_title");
+	{
+		std::string trackName = fileName;
+		trackName = trackName.substr(0, trackName.find("_override"));
+
+		std::string epTitleKey = episode + "_" + trackName;
+		m_episodeNames[epTitleKey] = jsonObject->getValue<std::string>("episode_title");
+	}
 
 	logger.debug("Loaded %s caption overrides from JSON for track %s in episode %s",
 	             std::to_string(overrides[captionKey].size()), captionKey, episode);
@@ -168,7 +174,13 @@ void SubtitleOverride::parseBsonOverride(const std::string& path, const std::str
 	overrides[captionKey] = std::move(segments);
 
 	if (document.exists("episode_title"))
-		m_episodeNames[episode] = document.get<std::string>("episode_title");
+	{
+		std::string trackName = fileName;
+		trackName = trackName.substr(0, trackName.find("_override"));
+
+		std::string epTitleKey = episode + "_" + trackName;
+		m_episodeNames[epTitleKey] = document.get<std::string>("episode_title");
+	}
 
 	logger.debug("Loaded %s caption overrides from GSON for track %s in episode %s",
 	             std::to_string(overrides[captionKey].size()), captionKey, episode);
@@ -181,7 +193,7 @@ std::string SubtitleOverride::OverrideSubtitles(const std::string& episodeId, co
 	if (!m_subtitleOverrides.contains(episodeId))
 		return dataRaw;
 
-	auto episodeOverrides = m_subtitleOverrides[episodeId];
+	auto& episodeOverrides = m_subtitleOverrides[episodeId];
 
 	if (!episodeOverrides.contains(trackName))
 		return dataRaw;
@@ -212,9 +224,10 @@ std::string SubtitleOverride::OverrideSubtitles(const std::string& episodeId, co
 		AutoPtr span = doc->createElement("span");
 		span->setAttribute("style", "textStyle");
 
-		if (m_episodeNames.contains(episodeId))
+		std::string epTitleKey = episodeId + "_" + trackName;
+		if (m_episodeNames.contains(epTitleKey))
 		{
-			AutoPtr text = doc->createTextNode(m_episodeNames[episodeId]);
+			AutoPtr text = doc->createTextNode(m_episodeNames[epTitleKey]);
 			span->appendChild(text);
 
 			// Append <span> to <p>
