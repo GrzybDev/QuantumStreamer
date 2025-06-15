@@ -82,7 +82,6 @@ In the config, you can set following values (dot seperates section and key)
 
 | Key							| Description																								| Allowed Values														| Default Value									|
 |-------------------------------|-----------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------|-----------------------------------------------|
-| Hook.OriginalLibraryName		| Original DLL filename or path																				| Any string															| `loc_x64_f_o.dll`								|
 | Logger.ShowConsole			| Show hook log in console																					| Boolean (true/false)													| `false`										|
 | Logger.SaveToLogFile			| Save hook log to file																						| Boolean (true/false)													| `false`										|
 | Logger.LogFile				| Filename of log file/Path to where save log file															| Any string															| `QuantumStreamer.log`							|
