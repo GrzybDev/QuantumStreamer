@@ -75,13 +75,8 @@ void StreamingServer::initLoggers() const
 	// Create a FormattingChannel that wraps ConsoleChannel
 	const AutoPtr pFormattingChannel = new FormattingChannel(pFormatter, pSplitterChannel);
 
-	const int logLevelHook = config().getInt("Logger.LogLevel_Hook", Message::PRIO_FATAL);
 	const int logLevelServer = config().getInt("Logger.LogLevel_Server", Message::PRIO_INFORMATION);
 	const int logLevelHttp = config().getInt("Logger.LogLevel_HTTP", Message::PRIO_FATAL);
-
-	Logger& hookLogger = Logger::get("Hook");
-	hookLogger.setChannel(pFormattingChannel);
-	hookLogger.setLevel(logLevelHook);
 
 	Logger::create("Server", pFormattingChannel, logLevelServer);
 	Logger::create("HTTP", pFormattingChannel, logLevelHttp);
