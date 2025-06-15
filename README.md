@@ -117,6 +117,8 @@ Usage
 Initially, after installing the hook, with default config - nothing should change in-game.
 Quantum Streamer on game launch will load `Server.VideoListPath`, after that hook will scan `Server.EpisodesPath` directory for the locally stored episodes and/or captions_overrides.
 
+VideoList loaded by game (`data/videoList.rmdj`) has to point to the Quantum Streamer server, you can easily patch `videoList.rmdj` file using [QuantumFetcher](https://github.com/GrzybDev/QuantumFetcher.git) tool.
+
 Each episode data is expected to be in dedicated episode directory (e.g. `./videos/episodes/J1A-X1-X2` is where hook will look for episode `J1A-X1-X2` (assuming `Server.EpisodesPath` is not changed))
 Local episodes are expected to be in ISM Smooth Stream format:
 
