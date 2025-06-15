@@ -80,24 +80,22 @@ The following formats are supported:
 In the config, you can set following values (dot seperates section and key)
 
 
-| Key							| Description																								| Allowed Values														| Default Value									|
-|-------------------------------|-----------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------|-----------------------------------------------|
-| Hook.OriginalLibraryName		| Original DLL filename or path																				| Any string															| `loc_x64_f_o.dll`								|
-| Logger.ShowConsole			| Show hook log in console																					| Boolean (true/false)													| `false`										|
-| Logger.SaveToLogFile			| Save hook log to file																						| Boolean (true/false)													| `false`										|
-| Logger.LogFile				| Filename of log file/Path to where save log file															| Any string															| `QuantumStreamer.log`							|
-| Logger.LogLevel_Hook			| Changes how detailed hook logging is (hook here means all of the stuff that game loads this library for)	| Integer (Range 0-8) The higher the number the more verbose output is	| `1`											|
-| Logger.LogLevel_Server		| Changes how detailed server logging is (all of the "actions" performed by server)							| Integer (Range 0-8) The higher the number the more verbose output is	| `1`											|
-| Logger.LogLevel_HTTP			| Changes how detailed HTTP logging is (HTTP Requests/Responses)											| Integer (Range 0-8) The higher the number the more verbose output is	| `1`											|
-| Server.EpisodesPath			| Path to where episodes data are located																	| Any string															| `./videos/episodes`							|
-| Server.MaxQueued				| Max queued HTTP requests																					| Integer																| `100`											|
-| Server.MaxThreads				| Max threads (HTTP server)																					| Integer																| Logical CPU count or 2 if failed to detect	|
-| Server.OfflineMode			| Disable online streaming, episodes stored locally will continue to work.									| Boolean (true/false)													| `false`										|
-| Server.Port					| Port for HTTP server (game also have to point to this port)												| Unsigned short (Range 0-65535)										| `10000`										|
-| Server.VideoListPath			| Path to original `videoList.rmdj`																			| Any string															| `./data/videoList_original.rmdj`				|
-| Subtitles.ClosedCaptioning	| If `false`, remove closed captions from subtitles															| Boolean (true/false)													| `false`										|
-| Subtitles.MusicNotes			| If `false`, remove music notes from subtitles																| Boolean (true/false)													| `true`										|
-| Subtitles.EpisodeNames		| If `true`, append episode name to video stream															| Boolean (true/false)													| `true`										|
+| Key							| Description																		| Allowed Values														| Default Value									|
+|-------------------------------|-----------------------------------------------------------------------------------|-----------------------------------------------------------------------|-----------------------------------------------|
+| Logger.ShowConsole			| Show hook log in console															| Boolean (true/false)													| `false`										|
+| Logger.SaveToLogFile			| Save hook log to file																| Boolean (true/false)													| `false`										|
+| Logger.LogFile				| Filename of log file/Path to where save log file									| Any string															| `QuantumStreamer.log`							|
+| Logger.LogLevel_Server		| Changes how detailed server logging is (all of the "actions" performed by server)	| Integer (Range 0-8) The higher the number the more verbose output is	| `1`											|
+| Logger.LogLevel_HTTP			| Changes how detailed HTTP logging is (HTTP Requests/Responses)					| Integer (Range 0-8) The higher the number the more verbose output is	| `1`											|
+| Server.EpisodesPath			| Path to where episodes data are located											| Any string															| `./videos/episodes`							|
+| Server.MaxQueued				| Max queued HTTP requests															| Integer																| `100`											|
+| Server.MaxThreads				| Max threads (HTTP server)															| Integer																| Logical CPU count or 2 if failed to detect	|
+| Server.OfflineMode			| Disable online streaming, episodes stored locally will continue to work.			| Boolean (true/false)													| `false`										|
+| Server.Port					| Port for HTTP server (game also have to point to this port)						| Unsigned short (Range 0-65535)										| `10000`										|
+| Server.VideoListPath			| Path to original `videoList.rmdj`													| Any string															| `./data/videoList_original.rmdj`				|
+| Subtitles.ClosedCaptioning	| If `false`, remove closed captions from subtitles									| Boolean (true/false)													| `false`										|
+| Subtitles.MusicNotes			| If `false`, remove music notes from subtitles										| Boolean (true/false)													| `true`										|
+| Subtitles.EpisodeNames		| If `true`, append episode name to video stream									| Boolean (true/false)													| `true`										|
 
 The default config should work for most of the users, but if you have special requirements you can change above settings.
 
