@@ -347,3 +347,38 @@ healthchecksdb
 
 # Backup folder for Package Reference Convert tool in Visual Studio 2017
 MigrationBackup/
+
+############################################################
+# vcpkg - Start
+############################################################
+
+.vscode/
+*.code-workspace
+/buildtrees/
+/build*/
+/downloads/
+/installed*/
+/vcpkg_installed*/
+/packages/
+/scripts/buildsystems/tmp/
+#ignore custom triplets
+/triplets/*
+#add vcpkg-designed triplets back in
+!/triplets/arm-uwp.cmake
+!/triplets/arm64-windows.cmake
+!/triplets/x64-linux.cmake
+!/triplets/x64-osx.cmake
+!/triplets/x64-uwp.cmake
+!/triplets/x64-windows-static.cmake
+!/triplets/x64-windows.cmake
+!/triplets/x86-windows.cmake
+
+!/triplets/community
+!/triplets/community/**
+
+*.exe
+*.zip
+
+############################################################
+# vcpkg - End
+############################################################
