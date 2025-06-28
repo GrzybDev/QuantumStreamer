@@ -112,6 +112,7 @@
     <ClInclude Include="src\server\base_handler.hpp" />
     <ClInclude Include="src\server\main.hpp" />
     <ClInclude Include="src\server\subsystems\video_list.hpp" />
+    <ClInclude Include="src\server\subsystems\subtitle_override.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\server\subsystems\offline_streaming.cpp" />
@@ -128,6 +129,7 @@
     <ClCompile Include="src\server\handlers\not_found.cpp" />
     <ClCompile Include="src\server\main.cpp" />
     <ClCompile Include="src\server\subsystems\video_list.cpp" />
+    <ClCompile Include="src\server\subsystems\subtitle_override.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\dllproxy.def" />
