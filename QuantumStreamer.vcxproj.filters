@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
@@ -20,6 +20,12 @@
     </Filter>
     <Filter Include="Source Files\Server\Handlers">
       <UniqueIdentifier>{1b88b42c-abbf-4816-9fc5-e980a94edf86}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Server\Subsystems">
+      <UniqueIdentifier>{b7853092-1f79-4e3c-aefe-79afeac51f23}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Server\Subsystems">
+      <UniqueIdentifier>{d51e978b-6b74-4c52-a7f7-769487725f1d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -44,6 +50,9 @@
     <ClInclude Include="src\server\handlers\not_implemented.hpp">
       <Filter>Header Files\Server\Handlers</Filter>
     </ClInclude>
+    <ClInclude Include="src\server\subsystems\video_list.hpp">
+      <Filter>Header Files\Server\Subsystems</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\dllmain.cpp">
@@ -66,6 +75,9 @@
     </ClCompile>
     <ClCompile Include="src\server\handlers\not_implemented.cpp">
       <Filter>Source Files\Server\Handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\server\subsystems\video_list.cpp">
+      <Filter>Source Files\Server\Subsystems</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

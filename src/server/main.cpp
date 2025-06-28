@@ -2,6 +2,7 @@
 #include "main.hpp"
 
 #include "handler_factory.hpp"
+#include "subsystems/video_list.hpp"
 
 using Poco::AutoPtr;
 using Poco::ConsoleChannel;
@@ -28,6 +29,8 @@ void QuantumStreamer::initialize(Application& self)
 	self.logger().notice("Source code: https://github.com/GrzybDev/QuantumStreamer");
 	self.logger().notice("Noticed a bug? Fill a bug report here: https://github.com/GrzybDev/QuantumStreamer/issues");
 	self.logger().notice("Licensed under GNU Lesser General Public License v3, Contributions of any kind welcome!");
+
+	addSubsystem(new VideoList);
 
 	ServerApplication::initialize(self);
 }
@@ -65,9 +68,11 @@ void QuantumStreamer::setupLogger() const
 
 	const int logLevelCore = config().getInt("Logger.LogLevel_Core", Message::PRIO_INFORMATION);
 	const int logLevelNetwork = config().getInt("Logger.LogLevel_Network", Message::PRIO_INFORMATION);
+	const int logLevelVideoList = config().getInt("Logger.LogLevel_VideoList", Message::PRIO_INFORMATION);
 
 	Logger::create("Core", pFormattingChannel, logLevelCore);
 	Logger::create("Network", pFormattingChannel, logLevelNetwork);
+	Logger::create("VideoList", pFormattingChannel, logLevelVideoList);
 }
 
 void QuantumStreamer::setupConsole()
