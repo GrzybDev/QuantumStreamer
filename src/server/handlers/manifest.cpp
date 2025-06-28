@@ -31,7 +31,7 @@ void ManifestRequestHandler::handleWithLogging(HTTPServerRequest& request, HTTPS
 
 	if (manifestUrl.empty())
 	{
-		response.setStatus(HTTPResponse::HTTP_NOT_FOUND);
+		response.setStatusAndReason(HTTPResponse::HTTP_NOT_FOUND);
 		response.send();
 		return;
 	}
@@ -45,7 +45,7 @@ void ManifestRequestHandler::handleWithLogging(HTTPServerRequest& request, HTTPS
 			logger.warning("Offline mode is enabled, but the requested client manifest is not available locally: %s",
 			               episode_id_);
 
-			response.setStatus(HTTPResponse::HTTP_NOT_ACCEPTABLE);
+			response.setStatusAndReason(HTTPResponse::HTTP_NOT_ACCEPTABLE);
 			response.send();
 			return;
 		}
@@ -100,7 +100,7 @@ void ManifestRequestHandler::handleWithLogging(HTTPServerRequest& request, HTTPS
 				logger.trace("Remote server response: %s", bodyStr);
 			}
 
-			response.setStatus(responseStatus);
+			response.setStatusAndReason(responseStatus);
 
 			for (const auto& [key, value] : manifestResponse)
 				response.set(key, value);
@@ -113,7 +113,7 @@ void ManifestRequestHandler::handleWithLogging(HTTPServerRequest& request, HTTPS
 			logger.error(
 				"An exception occurred while fetching client manifest from the remote server! [episode_id: %s] (%s)",
 				episode_id_, ex.displayText());
-			response.setStatus(HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
+			response.setStatusAndReason(HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
 			response.send();
 		}
 	}
