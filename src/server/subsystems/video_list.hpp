@@ -15,6 +15,8 @@ public:
 	std::string getFragmentUrl(const std::string& episode_id, const std::string& bitrate, const std::string& type,
 	                           const std::string& start_time);
 
+	std::vector<std::string> getEpisodeList();
+
 protected:
 	void initialize(Poco::Util::Application& app) override;
 	void uninitialize() override;
