@@ -101,6 +101,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\server\subsystems\offline_streaming.hpp" />
     <ClInclude Include="src\server\handlers\fragment.hpp" />
     <ClInclude Include="src\server\handlers\manifest.hpp" />
     <ClInclude Include="src\server\handlers\not_implemented.hpp" />
@@ -113,6 +114,7 @@
     <ClInclude Include="src\server\subsystems\video_list.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\server\subsystems\offline_streaming.cpp" />
     <ClCompile Include="src\server\handlers\fragment.cpp" />
     <ClCompile Include="src\server\handlers\manifest.cpp" />
     <ClCompile Include="src\server\handlers\not_implemented.cpp" />
