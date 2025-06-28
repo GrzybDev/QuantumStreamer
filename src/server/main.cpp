@@ -58,7 +58,10 @@ void QuantumStreamer::setupLogger() const
 	const AutoPtr pFormattingChannel = new FormattingChannel(pFormatter, pSplitterChannel);
 
 	const int logLevelCore = config().getInt("Logger.LogLevel_Core", Message::PRIO_INFORMATION);
+	const int logLevelNetwork = config().getInt("Logger.LogLevel_Network", Message::PRIO_INFORMATION);
+
 	Logger::create("Core", pFormattingChannel, logLevelCore);
+	Logger::create("Network", pFormattingChannel, logLevelNetwork);
 }
 
 void QuantumStreamer::setupConsole()
