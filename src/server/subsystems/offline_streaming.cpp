@@ -303,3 +303,97 @@ std::string OfflineStreaming::getLocalClientManifest(const std::string& episode_
 
 	return buffer.str();
 }
+
+std::string OfflineStreaming::getLocalFragment(const std::string& episode_id, const std::string& track_name,
+                                               const std::string& bitrate,
+                                               const std::string& start_time)
+{
+	if (!streams_.contains(episode_id))
+		return {};
+
+	Logger& logger = Logger::get(name());
+
+	auto& [clientManifestRelativePath, mediaMap] = streams_[episode_id];
+	std::string mediaKey = track_name + "_" + bitrate;
+
+	if (!mediaMap.contains(mediaKey))
+		return {};
+
+	SmoothMedia media = mediaMap[mediaKey];
+	SmoothTrack track = media.track;
+
+	if (!track.fragments.contains(start_time))
+		return {};
+
+	SmoothFragment fragment = track.fragments[start_time];
+
+	std::ifstream fragmentStream(media.source_file.toString(), std::ios::binary);
+
+	if (!fragmentStream)
+	{
+		logger.warning(
+			"Failed to open track file %s, the file was there while initializing, but it probably got deleted. Will need to fetch client manifest from server.",
+			media.source_file.toString());
+		fragmentStream.close();
+
+		return {};
+	}
+
+	fragmentStream.seekg(static_cast<long long>(fragment.moof_offset));
+
+	unsigned int moofSize;
+	fragmentStream.read(reinterpret_cast<char*>(&moofSize), sizeof(moofSize));
+	moofSize = _byteswap_ulong(moofSize);
+
+	std::string moofExpectedMagic = BLOCK_MOOF;
+	std::string moofMagic(moofExpectedMagic.length(), '\0');
+	fragmentStream.read(moofMagic.data(), moofExpectedMagic.length());
+
+	if (moofMagic != moofExpectedMagic)
+	{
+		logger.warning(
+			"Invalid moof magic in fragment at start time %s in track %s, expected: %s, got %s. Will need to fetch that fragment from server.",
+			start_time, media.source_file.toString(), moofExpectedMagic, moofMagic);
+		fragmentStream.close();
+
+		return {};
+	}
+
+	std::string fragmentData;
+
+	fragmentStream.seekg(-8, std::ios::cur);
+
+	auto moof = new char[moofSize];
+	fragmentStream.read(moof, moofSize);
+	fragmentData.append(moof, moofSize);
+	delete[] moof;
+
+	unsigned int mdatSize;
+	fragmentStream.read(reinterpret_cast<char*>(&mdatSize), 4);
+	mdatSize = _byteswap_ulong(mdatSize);
+
+	std::string mdatExpectedMagic = BLOCK_MDAT;
+	std::string mdatMagic(mdatExpectedMagic.length(), '\0');
+	fragmentStream.read(mdatMagic.data(), mdatExpectedMagic.length());
+
+	if (mdatMagic != mdatExpectedMagic)
+	{
+		logger.warning(
+			"Invalid mdat magic in fragment at start time %s in track %s, expected: %s, got %s. Will need to fetch that fragment from server.",
+			start_time, media.source_file, mdatExpectedMagic, mdatMagic);
+		fragmentStream.close();
+
+		return "";
+	}
+
+	fragmentStream.seekg(-8, std::ios::cur);
+
+	auto mdat = new char[mdatSize];
+	fragmentStream.read(mdat, mdatSize);
+	fragmentData.append(mdat, mdatSize);
+
+	delete[] mdat;
+	fragmentStream.close();
+
+	return fragmentData;
+}
