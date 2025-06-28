@@ -9,5 +9,6 @@
 
 // add headers that you want to pre-compile here
 #include "framework.hpp"
+#include "server/base_handler.hpp"
 
 #endif //PCH_H
