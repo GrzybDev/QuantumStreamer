@@ -3,7 +3,8 @@
     {
       "name": "poco",
       "features": [
-        "util"
+        "util",
+        "net"
       ]
     }
   ]
