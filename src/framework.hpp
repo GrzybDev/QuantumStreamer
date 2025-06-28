@@ -8,6 +8,7 @@ static constexpr unsigned char VERSION_PATCH = 0;
 
 // Standard C++ Header Files
 #include <format>
+#include <fstream>
 #include <iostream>
 #include <string>
 #include <thread>
@@ -27,6 +28,9 @@ static constexpr unsigned char VERSION_PATCH = 0;
 #include <Poco/PatternFormatter.h>
 #include <Poco/SplitterChannel.h>
 #include <Poco/ThreadPool.h>
+#include <Poco/Dynamic/Var.h>
+#include <Poco/JSON/Object.h>
+#include <Poco/JSON/Parser.h>
 #include <Poco/Net/HTTPRequestHandler.h>
 #include <Poco/Net/HTTPRequestHandlerFactory.h>
 #include <Poco/Net/HTTPResponse.h>
