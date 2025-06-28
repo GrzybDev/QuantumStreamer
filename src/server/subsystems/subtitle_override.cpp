@@ -34,6 +34,12 @@ void SubtitleOverride::initialize(Application& app)
 	Logger& logger = Logger::get(name());
 	logger.debug("Loading subtitle overrides...");
 
+	closed_captioning_ = app.config().getBool("Subtitles.ClosedCaptioning", false);
+	music_notes_ = app.config().getBool("Subtitles.MusicNotes", true);
+
+	logger.information("Closed captioning is %s", std::string(closed_captioning_ ? "enabled" : "disabled"));
+	logger.information("Music notes are %s", std::string(music_notes_ ? "enabled" : "disabled"));
+
 	const std::string episodesPath = app.config().getString("Server.EpisodesPath", "./videos/episodes");
 	VideoList& videoList = app.getSubsystem<VideoList>();
 
@@ -158,4 +164,78 @@ void SubtitleOverride::parseBsonOverride(const std::string& path, const std::str
 
 	logger.debug("Loaded %s caption overrides from GSON for track %s in episode %s",
 	             std::to_string(overrides[captionKey].size()), captionKey, episode_id);
+}
+
+std::string SubtitleOverride::overrideSubtitles(const std::string& episode_id, const std::string& track_name, std::string& data_raw)
+{
+	Logger& logger = Logger::get(name());
+
+	if (!m_subtitle_overrides_.contains(episode_id))
+		return data_raw;
+
+	auto& episodeOverrides = m_subtitle_overrides_[episode_id];
+
+	if (!episodeOverrides.contains(track_name))
+		return data_raw;
+
+	auto& segments = episodeOverrides[track_name];
+
+	std::istringstream xmlStream(data_raw);
+	InputSource src(xmlStream);
+	DOMParser parser;
+	AutoPtr doc = parser.parse(&src);
+
+	NodeList* pList = doc->getElementsByTagName("p");
+
+	for (unsigned long i = 0; i < pList->length(); ++i) {
+		auto pElem = dynamic_cast<Element*>(pList->item(i));
+		auto span = pElem->getElementsByTagName("span")->item(0);
+
+		std::string segmentIdStr = pElem->getAttribute("xml:id");
+
+		std::string origText = span->innerText();
+		std::string newText;
+
+		if (int segmentId = std::stoi(segmentIdStr.substr(1)); segmentId >= 0 && segmentId < segments.size())
+			newText = segments[segmentId];
+		else
+			newText = origText;
+
+		if (!closed_captioning_)
+		{
+			// Remove closed captioning
+			std::regex ccRegex(R"([ -]*\[ .* \])");
+			newText = std::regex_replace(newText, ccRegex, "");
+		}
+
+		if (!music_notes_)
+		{
+			// Remove music notes
+			std::string pattern;
+			pattern += "\xE2\x99\xAA"; // UTF-8 encoding of music note (U+266A)
+			pattern += "\xE2\x99\xAA";
+
+			std::regex musicNoteRegex(pattern);
+			newText = std::regex_replace(newText, musicNoteRegex, "");
+		}
+
+		while (Node* child = span->firstChild())
+		{
+			span->removeChild(child);
+			child->release();
+		}
+
+		AutoPtr newSpanContent = doc->createTextNode(newText);
+		span->appendChild(newSpanContent);
+
+		logger.trace("Episode: %s (%s), Segment: %s ('%s' -> '%s')", episode_id, track_name, segmentIdStr, origText, newText);
+	}
+
+	DOMWriter writer;
+	writer.setOptions(XMLWriter::WRITE_XML_DECLARATION | XMLWriter::CANONICAL_XML);
+
+	std::ostringstream outputStream;
+	writer.writeNode(outputStream, doc);
+
+	return outputStream.str();
 }
