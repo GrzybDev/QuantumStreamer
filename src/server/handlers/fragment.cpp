@@ -168,7 +168,8 @@ std::string FragmentRequestHandler::processSubtitleData(const std::string& data)
 	SubtitleOverride& subtitleOverride = app.getSubsystem<SubtitleOverride>();
 
 	const std::string newSubtitleData = subtitleOverride.overrideSubtitles(
-		episode_id_, type_, subtitleData);
+		episode_id_, type_, subtitleData,
+		start_time_ == EPISODE_TITLE_START_TIME);
 
 	mdatSize = static_cast<unsigned int>(newSubtitleData.size() + 8);
 
