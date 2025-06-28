@@ -1,10 +1,9 @@
 #include "pch.hpp"
 #include "handler_factory.hpp"
 
+#include "handlers/error.hpp"
 #include "handlers/fragment.hpp"
 #include "handlers/manifest.hpp"
-#include "handlers/not_found.hpp"
-#include "handlers/not_implemented.hpp"
 
 using Poco::Logger;
 using Poco::Net::HTTPRequest;
@@ -39,8 +38,8 @@ HTTPRequestHandler* RequestHandlerFactory::createRequestHandler(const HTTPServer
 			return new FragmentRequestHandler(episodeId, qualityLevel, fragmentType, startTime);
 		}
 
-		return new NotFoundHandler();
+		return new ErrorHandler(HTTPResponse::HTTP_NOT_FOUND);
 	}
 
-	return new NotImplementedHandler();
+	return new ErrorHandler(HTTPResponse::HTTP_NOT_IMPLEMENTED);
 }

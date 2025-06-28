@@ -38,7 +38,7 @@ void FragmentRequestHandler::handleWithLogging(HTTPServerRequest& request, HTTPS
 
 	if (fragmentUrl.empty())
 	{
-		response.setStatus(HTTPResponse::HTTP_NOT_FOUND);
+		response.setStatusAndReason(HTTPResponse::HTTP_NOT_FOUND);
 		response.send();
 		return;
 	}
@@ -53,7 +53,7 @@ void FragmentRequestHandler::handleWithLogging(HTTPServerRequest& request, HTTPS
 			logger.warning("Offline mode is enabled, but the requested fragment is not available locally: %s",
 			               episode_id_);
 
-			response.setStatus(HTTPResponse::HTTP_NOT_ACCEPTABLE);
+			response.setStatusAndReason(HTTPResponse::HTTP_NOT_ACCEPTABLE);
 			response.send();
 			return;
 		}
@@ -111,7 +111,7 @@ void FragmentRequestHandler::handleWithLogging(HTTPServerRequest& request, HTTPS
 				logger.trace(bodyStr);
 			}
 
-			response.setStatus(responseStatus);
+			response.setStatusAndReason(responseStatus);
 
 			for (const auto& [key, value] : fragmentResponse)
 				response.set(key, value);
@@ -130,7 +130,7 @@ void FragmentRequestHandler::handleWithLogging(HTTPServerRequest& request, HTTPS
 				type_,
 				start_time_,
 				ex.displayText());
-			response.setStatus(HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
+			response.setStatusAndReason(HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
 			response.send();
 		}
 	}

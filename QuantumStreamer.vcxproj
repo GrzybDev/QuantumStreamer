@@ -104,11 +104,10 @@
     <ClInclude Include="src\server\subsystems\offline_streaming.hpp" />
     <ClInclude Include="src\server\handlers\fragment.hpp" />
     <ClInclude Include="src\server\handlers\manifest.hpp" />
-    <ClInclude Include="src\server\handlers\not_implemented.hpp" />
     <ClInclude Include="src\server\handler_factory.hpp" />
     <ClInclude Include="src\framework.hpp" />
     <ClInclude Include="src\pch.hpp" />
-    <ClInclude Include="src\server\handlers\not_found.hpp" />
+    <ClInclude Include="src\server\handlers\error.hpp" />
     <ClInclude Include="src\server\base_handler.hpp" />
     <ClInclude Include="src\server\main.hpp" />
     <ClInclude Include="src\server\subsystems\video_list.hpp" />
@@ -118,7 +117,6 @@
     <ClCompile Include="src\server\subsystems\offline_streaming.cpp" />
     <ClCompile Include="src\server\handlers\fragment.cpp" />
     <ClCompile Include="src\server\handlers\manifest.cpp" />
-    <ClCompile Include="src\server\handlers\not_implemented.cpp" />
     <ClCompile Include="src\server\handler_factory.cpp" />
     <ClCompile Include="src\dllmain.cpp" />
     <ClCompile Include="src\pch.cpp">
@@ -126,7 +124,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="src\server\base_handler.cpp" />
-    <ClCompile Include="src\server\handlers\not_found.cpp" />
+    <ClCompile Include="src\server\handlers\error.cpp" />
     <ClCompile Include="src\server\main.cpp" />
     <ClCompile Include="src\server\subsystems\video_list.cpp" />
     <ClCompile Include="src\server\subsystems\subtitle_override.cpp" />

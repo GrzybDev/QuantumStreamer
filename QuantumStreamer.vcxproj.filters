@@ -44,12 +44,6 @@
     <ClInclude Include="src\server\handler_factory.hpp">
       <Filter>Header Files\Server</Filter>
     </ClInclude>
-    <ClInclude Include="src\server\handlers\not_found.hpp">
-      <Filter>Header Files\Server\Handlers</Filter>
-    </ClInclude>
-    <ClInclude Include="src\server\handlers\not_implemented.hpp">
-      <Filter>Header Files\Server\Handlers</Filter>
-    </ClInclude>
     <ClInclude Include="src\server\subsystems\video_list.hpp">
       <Filter>Header Files\Server\Subsystems</Filter>
     </ClInclude>
@@ -64,6 +58,9 @@
     </ClInclude>
     <ClInclude Include="src\server\subsystems\subtitle_override.hpp">
       <Filter>Header Files\Server\Subsystems</Filter>
+    </ClInclude>
+    <ClInclude Include="src\server\handlers\error.hpp">
+      <Filter>Header Files\Server\Handlers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -82,12 +79,6 @@
     <ClCompile Include="src\server\handler_factory.cpp">
       <Filter>Source Files\Server</Filter>
     </ClCompile>
-    <ClCompile Include="src\server\handlers\not_found.cpp">
-      <Filter>Source Files\Server\Handlers</Filter>
-    </ClCompile>
-    <ClCompile Include="src\server\handlers\not_implemented.cpp">
-      <Filter>Source Files\Server\Handlers</Filter>
-    </ClCompile>
     <ClCompile Include="src\server\subsystems\video_list.cpp">
       <Filter>Source Files\Server\Subsystems</Filter>
     </ClCompile>
@@ -102,6 +93,9 @@
     </ClCompile>
     <ClCompile Include="src\server\subsystems\subtitle_override.cpp">
       <Filter>Source Files\Server\Subsystems</Filter>
+    </ClCompile>
+    <ClCompile Include="src\server\handlers\error.cpp">
+      <Filter>Source Files\Server\Handlers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
