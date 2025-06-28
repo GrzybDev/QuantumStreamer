@@ -20,6 +20,9 @@ static constexpr unsigned char VERSION_PATCH = 0;
 #include <Poco/ConsoleChannel.h>
 #include <Poco/FileChannel.h>
 #include <Poco/FormattingChannel.h>
+#include <Poco/Logger.h>
+#include <Poco/Message.h>
+#include <Poco/PatternFormatter.h>
 #include <Poco/SplitterChannel.h>
 #include <Poco/Util/Application.h>
 #include <Poco/Util/ServerApplication.h>

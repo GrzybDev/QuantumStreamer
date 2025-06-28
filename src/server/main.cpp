@@ -4,6 +4,10 @@
 using Poco::AutoPtr;
 using Poco::ConsoleChannel;
 using Poco::FileChannel;
+using Poco::FormattingChannel;
+using Poco::Logger;
+using Poco::Message;
+using Poco::PatternFormatter;
 using Poco::SplitterChannel;
 using Poco::Util::Application;
 
@@ -46,6 +50,15 @@ void QuantumStreamer::setupLogger() const
 
 	if (saveToLogFile)
 		pSplitterChannel->addChannel(pFileChannel);
+
+	// Custom format for log messages
+	const AutoPtr pFormatter = new PatternFormatter("[%Y-%m-%d %H:%M:%S.%i][%p][%s] %t");
+
+	// Create a FormattingChannel that wraps ConsoleChannel
+	const AutoPtr pFormattingChannel = new FormattingChannel(pFormatter, pSplitterChannel);
+
+	const int logLevelCore = config().getInt("Logger.LogLevel_Core", Message::PRIO_INFORMATION);
+	Logger::create("Core", pFormattingChannel, logLevelCore);
 }
 
 void QuantumStreamer::setupConsole()
