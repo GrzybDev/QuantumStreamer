@@ -11,6 +11,8 @@ class VideoList final : public Poco::Util::Subsystem
 public:
 	[[nodiscard]] const char* name() const override;
 
+	std::string getManifestUrl(const std::string& episode_id);
+
 protected:
 	void initialize(Poco::Util::Application& app) override;
 	void uninitialize() override;
