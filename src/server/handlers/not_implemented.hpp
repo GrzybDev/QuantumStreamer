@@ -1,7 +1,5 @@
 #pragma once
 
-#include "../base_handler.hpp"
-
 class NotImplementedHandler final : public BaseHandler
 {
 public:
