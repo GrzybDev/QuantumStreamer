@@ -1,6 +1,7 @@
 #include "pch.hpp"
 #include "handler_factory.hpp"
 
+#include "handlers/fragment.hpp"
 #include "handlers/manifest.hpp"
 #include "handlers/not_found.hpp"
 #include "handlers/not_implemented.hpp"
@@ -18,12 +19,24 @@ HTTPRequestHandler* RequestHandlerFactory::createRequestHandler(const HTTPServer
 		const std::string& uri = request.getURI();
 
 		const std::regex manifestUrlPattern(R"(^/([^/]+)/manifest$)");
+		const std::regex fragmentUrlPattern(R"(^/([^/]+)/QualityLevels\((\d+)\)/Fragments\(([^=]+)=(\d+)\)$)");
+
 		std::smatch match;
 
 		if (std::regex_match(uri, match, manifestUrlPattern))
 		{
 			const std::string episodeId = match[1].str();
 			return new ManifestRequestHandler(episodeId);
+		}
+
+		if (std::regex_match(uri, match, fragmentUrlPattern))
+		{
+			std::string episodeId = match[1].str();
+			std::string qualityLevel = match[2].str();
+			std::string fragmentType = match[3].str();
+			std::string startTime = match[4].str();
+
+			return new FragmentRequestHandler(episodeId, qualityLevel, fragmentType, startTime);
 		}
 
 		return new NotFoundHandler();
