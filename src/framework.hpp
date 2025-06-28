@@ -6,8 +6,20 @@ static constexpr unsigned char VERSION_PATCH = 0;
 
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 
+// Standard C++ Header Files
+#include <format>
+#include <iostream>
+#include <string>
+
 // Windows Header Files
+#include <tchar.h>
 #include <windows.h>
 
 // Poco Header Files
+#include <Poco/AutoPtr.h>
+#include <Poco/ConsoleChannel.h>
+#include <Poco/FileChannel.h>
+#include <Poco/FormattingChannel.h>
+#include <Poco/SplitterChannel.h>
+#include <Poco/Util/Application.h>
 #include <Poco/Util/ServerApplication.h>
