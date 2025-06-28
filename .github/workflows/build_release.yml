@@ -1,0 +1,37 @@
+name: Release Build
+
+on:
+  release:
+    types: [published]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build
+    permissions: write-all
+
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Integrate vcpkg
+        run: vcpkg integrate install
+
+      - name: Build
+        run: msbuild QuantumStreamer.sln -property:Configuration=Release
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ReleaseBuild
+          path: x64\Release
+
+      - name: Upload Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ./x64/Release/loc_x64_f.dll
