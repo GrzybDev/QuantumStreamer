@@ -12,6 +12,8 @@ public:
 	[[nodiscard]] const char* name() const override;
 
 	std::string getManifestUrl(const std::string& episode_id);
+	std::string getFragmentUrl(const std::string& episode_id, const std::string& bitrate, const std::string& type,
+	                           const std::string& start_time);
 
 protected:
 	void initialize(Poco::Util::Application& app) override;

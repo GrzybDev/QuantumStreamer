@@ -67,3 +67,25 @@ std::string VideoList::getManifestUrl(const std::string& episode_id)
 
 	return video_list_->getValue<std::string>(episode_id);
 }
+
+std::string VideoList::getFragmentUrl(const std::string& episode_id, const std::string& bitrate,
+                                      const std::string& type, const std::string& start_time)
+{
+	if (!video_list_->has(episode_id))
+		return {};
+
+	const auto manifestUrl = video_list_->getValue<std::string>(episode_id);
+
+	// Replace "manifest" with QualityLevels({bitrate})/Fragments({type}={startTime})
+	std::string fragmentUrl = manifestUrl;
+	if (const size_t pos = fragmentUrl.find("manifest"); pos != std::string::npos)
+		fragmentUrl.replace(pos, 8, "QualityLevels(" + bitrate + ")/Fragments(" + type + "=" + start_time + ")");
+	else
+	{
+		Logger& logger = Logger::get("Server");
+		logger.warning("Failed to find 'manifest' in URL: %s", manifestUrl);
+		return {};
+	}
+
+	return fragmentUrl;
+}
