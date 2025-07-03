@@ -275,3 +275,31 @@ std::pair<bool, OfflineStreaming::SmoothTrack> OfflineStreaming::preloadTrack(co
 
 	return {success, track};
 }
+
+std::string OfflineStreaming::getLocalClientManifest(const std::string& episode_id)
+{
+	if (!streams_.contains(episode_id))
+		return "";
+
+	Logger& logger = Logger::get(name());
+
+	Path clientManifestRelativePath = streams_[episode_id].client_manifest_relative_path;
+	std::ifstream clientManifestStream(clientManifestRelativePath.toString());
+
+	if (!clientManifestStream)
+	{
+		logger.warning(
+			"Failed to open client manifest file %s, the file was there while initializing, but it probably got deleted. Will need to fetch client manifest from server.",
+			clientManifestRelativePath);
+		clientManifestStream.close();
+
+		return "";
+	}
+
+	std::stringstream buffer;
+	buffer << clientManifestStream.rdbuf();
+
+	clientManifestStream.close();
+
+	return buffer.str();
+}
