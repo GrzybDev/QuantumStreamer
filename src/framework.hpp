@@ -9,6 +9,8 @@ static constexpr unsigned char VERSION_PATCH = 0;
 #define BLOCK_MOOF "moof"
 #define BLOCK_TFRA "tfra"
 
+#define EPISODE_TITLE_START_TIME "80080000"
+
 #define FLAGS_TO_SKIP 3
 #define REMOTE_TIMEOUT 20 // seconds (Game seems to use 20 seconds till it tries to retry)
 

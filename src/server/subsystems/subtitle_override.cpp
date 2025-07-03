@@ -36,9 +36,11 @@ void SubtitleOverride::initialize(Application& app)
 
 	closed_captioning_ = app.config().getBool("Subtitles.ClosedCaptioning", false);
 	music_notes_ = app.config().getBool("Subtitles.MusicNotes", true);
+	episode_titles_ = app.config().getBool("Subtitles.EpisodeTitles", true);
 
 	logger.information("Closed captioning is %s", std::string(closed_captioning_ ? "enabled" : "disabled"));
 	logger.information("Music notes are %s", std::string(music_notes_ ? "enabled" : "disabled"));
+	logger.information("%s append episode titles to streams", std::string(episode_titles_ ? "Will" : "Will not"));
 
 	const std::string episodesPath = app.config().getString("Server.EpisodesPath", "./videos/episodes");
 	VideoList& videoList = app.getSubsystem<VideoList>();
@@ -81,6 +83,7 @@ void SubtitleOverride::initialize(Application& app)
 void SubtitleOverride::uninitialize()
 {
 	m_subtitle_overrides_.clear();
+	m_episode_titles_.clear();
 }
 
 std::string SubtitleOverride::extractCaptionKey(const std::string& file_name)
@@ -93,7 +96,7 @@ std::string SubtitleOverride::extractCaptionKey(const std::string& file_name)
 
 void SubtitleOverride::parseJsonOverride(const std::string& path, const std::string& file_name,
                                          const std::string& episode_id,
-                                         std::map<std::string, std::vector<std::string>>& overrides) const
+                                         std::map<std::string, std::vector<std::string>>& overrides)
 {
 	Logger& logger = Logger::get(name());
 
@@ -123,13 +126,22 @@ void SubtitleOverride::parseJsonOverride(const std::string& path, const std::str
 	std::string captionKey = extractCaptionKey(file_name);
 	overrides[captionKey] = std::move(segments);
 
+	if (jsonObject->has("episode_title"))
+	{
+		std::string trackName = file_name;
+		trackName = trackName.substr(0, trackName.find("_override"));
+
+		const std::string epTitleKey = episode_id + "_" + trackName;
+		m_episode_titles_[epTitleKey] = jsonObject->getValue<std::string>("episode_title");
+	}
+
 	logger.debug("Loaded %s caption overrides from JSON for track %s in episode %s",
 	             std::to_string(overrides[captionKey].size()), captionKey, episode_id);
 }
 
 void SubtitleOverride::parseBsonOverride(const std::string& path, const std::string& file_name,
                                          const std::string& episode_id,
-                                         std::map<std::string, std::vector<std::string>>& overrides) const
+                                         std::map<std::string, std::vector<std::string>>& overrides)
 {
 	Logger& logger = Logger::get(name());
 
@@ -162,11 +174,21 @@ void SubtitleOverride::parseBsonOverride(const std::string& path, const std::str
 
 	overrides[captionKey] = std::move(segments);
 
+	if (document.exists("episode_title"))
+	{
+		std::string trackName = file_name;
+		trackName = trackName.substr(0, trackName.find("_override"));
+
+		const std::string epTitleKey = episode_id + "_" + trackName;
+		m_episode_titles_[epTitleKey] = document.get<std::string>("episode_title");
+	}
+
 	logger.debug("Loaded %s caption overrides from GSON for track %s in episode %s",
 	             std::to_string(overrides[captionKey].size()), captionKey, episode_id);
 }
 
-std::string SubtitleOverride::overrideSubtitles(const std::string& episode_id, const std::string& track_name, std::string& data_raw)
+std::string SubtitleOverride::overrideSubtitles(const std::string& episode_id, const std::string& track_name,
+                                                std::string& data_raw, bool is_episode_title_segment)
 {
 	Logger& logger = Logger::get(name());
 
@@ -187,7 +209,8 @@ std::string SubtitleOverride::overrideSubtitles(const std::string& episode_id, c
 
 	NodeList* pList = doc->getElementsByTagName("p");
 
-	for (unsigned long i = 0; i < pList->length(); ++i) {
+	for (unsigned long i = 0; i < pList->length(); ++i)
+	{
 		auto pElem = dynamic_cast<Element*>(pList->item(i));
 		auto span = pElem->getElementsByTagName("span")->item(0);
 
@@ -228,7 +251,45 @@ std::string SubtitleOverride::overrideSubtitles(const std::string& episode_id, c
 		AutoPtr newSpanContent = doc->createTextNode(newText);
 		span->appendChild(newSpanContent);
 
-		logger.trace("Episode: %s (%s), Segment: %s ('%s' -> '%s')", episode_id, track_name, segmentIdStr, origText, newText);
+		logger.trace("Episode: %s (%s), Segment: %s ('%s' -> '%s')", episode_id, track_name, segmentIdStr, origText,
+		             newText);
+	}
+
+	if (episode_titles_ && is_episode_title_segment)
+	{
+		if (std::string epTitleKey = episode_id + "_" + track_name; m_episode_titles_.contains(epTitleKey))
+		{
+			// Create new <p> element for episode title
+			AutoPtr p = doc->createElement("p");
+			p->setAttribute("xml:id", "episode_title");
+			p->setAttribute("begin", "00:00:00.000");
+			p->setAttribute("end", "00:00:01.850");
+			p->setAttribute("region", "speaker");
+
+			// Create <span> child with style and text content
+			AutoPtr span = doc->createElement("span");
+			span->setAttribute("style", "textStyle");
+
+			// Create text node with episode title
+			AutoPtr textNode = doc->createTextNode(m_episode_titles_[epTitleKey]);
+			span->appendChild(textNode);
+
+			// Append the <span> to the <p>
+			p->appendChild(span);
+
+			// Add the new <p> element to the first <div> in the document
+			if (NodeList* divList = doc->getElementsByTagName("div"); divList->length() > 0)
+			{
+				auto firstDiv = dynamic_cast<Element*>(divList->item(0));
+				firstDiv->appendChild(p);
+				logger.trace("Added episode title '%s' to subtitles for episode %s", m_episode_titles_[epTitleKey],
+				             episode_id);
+			}
+			else
+			{
+				logger.warning("No <div> found in subtitles for episode %s to add episode title!", episode_id);
+			}
+		}
 	}
 
 	DOMWriter writer;
