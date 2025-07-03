@@ -1,6 +1,8 @@
 #include "pch.hpp"
 #include "main.hpp"
 
+#include "handler_factory.hpp"
+
 using Poco::AutoPtr;
 using Poco::ConsoleChannel;
 using Poco::FileChannel;
@@ -9,6 +11,10 @@ using Poco::Logger;
 using Poco::Message;
 using Poco::PatternFormatter;
 using Poco::SplitterChannel;
+using Poco::ThreadPool;
+using Poco::Net::HTTPServer;
+using Poco::Net::HTTPServerParams;
+using Poco::Net::ServerSocket;
 using Poco::Util::Application;
 
 void QuantumStreamer::initialize(Application& self)
@@ -98,4 +104,51 @@ void QuantumStreamer::setupConsole()
 	std::wclog.clear();
 	std::wcerr.clear();
 	std::wcin.clear();
+}
+
+int QuantumStreamer::main(const std::vector<std::string>& args)
+{
+	Logger& logger = Logger::get("Core");
+	logger.debug("Initializing Quantum Streamer...");
+
+	unsigned int n = std::thread::hardware_concurrency();
+
+	if (n == 0)
+	{
+		logger.warning(
+			"Could not detect hardware concurrency, will use default value of 2 threads if not configured manually.");
+		n = 2; // Default to 2 threads if hardware concurrency cannot be detected
+	}
+
+	const int maxQueued = config().getInt("Server.MaxQueued", 100);
+	const int maxThreads = config().getInt("Server.MaxThreads", static_cast<int>(n));
+	ThreadPool::defaultPool().addCapacity(maxThreads);
+
+	const auto pParams = new HTTPServerParams;
+	pParams->setKeepAlive(false);
+	pParams->setMaxQueued(maxQueued);
+	pParams->setMaxThreads(maxThreads);
+	logger.debug("Max Queued: %d", maxQueued);
+	logger.debug("Max Threads: %d", maxThreads);
+
+	// set up the server socket
+	const unsigned short port = static_cast<unsigned short>(config().getInt("Server.Port", 10000));
+	const ServerSocket svs(port);
+
+	// create the HTTP server instance
+	HTTPServer srv(new RequestHandlerFactory(), svs, pParams);
+
+	// start the server
+	srv.start();
+
+	logger.information("Started HTTP Server (Listening at port %d)", static_cast<int>(port));
+
+	// wait for termination signal
+	waitForTerminationRequest();
+
+	logger.information("Stopping HTTP Server...");
+
+	// stop the server
+	srv.stop();
+	return EXIT_OK;
 }
