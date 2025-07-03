@@ -4,6 +4,12 @@ static constexpr unsigned char VERSION_MAJOR = 0;
 static constexpr unsigned char VERSION_MINOR = 1;
 static constexpr unsigned char VERSION_PATCH = 0;
 
+#define BLOCK_MDAT "mdat"
+#define BLOCK_MFRA "mfra"
+#define BLOCK_MOOF "moof"
+#define BLOCK_TFRA "tfra"
+
+#define FLAGS_TO_SKIP 3
 #define REMOTE_TIMEOUT 20 // seconds (Game seems to use 20 seconds till it tries to retry)
 
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
@@ -24,6 +30,7 @@ static constexpr unsigned char VERSION_PATCH = 0;
 // Poco Header Files
 #include <Poco/AutoPtr.h>
 #include <Poco/ConsoleChannel.h>
+#include <Poco/DirectoryIterator.h>
 #include <Poco/Exception.h>
 #include <Poco/File.h>
 #include <Poco/FileChannel.h>
@@ -36,6 +43,11 @@ static constexpr unsigned char VERSION_PATCH = 0;
 #include <Poco/ThreadPool.h>
 #include <Poco/Timespan.h>
 #include <Poco/URI.h>
+#include <Poco/DOM/DOMParser.h>
+#include <Poco/DOM/Document.h>
+#include <Poco/DOM/Element.h>
+#include <Poco/DOM/Node.h>
+#include <Poco/DOM/NodeList.h>
 #include <Poco/Dynamic/Var.h>
 #include <Poco/JSON/Object.h>
 #include <Poco/JSON/Parser.h>
@@ -50,5 +62,6 @@ static constexpr unsigned char VERSION_PATCH = 0;
 #include <Poco/Net/HTTPServerRequest.h>
 #include <Poco/Net/HTTPServerResponse.h>
 #include <Poco/Net/ServerSocket.h>
+#include <Poco/SAX/InputSource.h>
 #include <Poco/Util/Application.h>
 #include <Poco/Util/ServerApplication.h>

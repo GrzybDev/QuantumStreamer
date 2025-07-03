@@ -56,6 +56,9 @@
     <ClInclude Include="src\server\handlers\fragment.hpp">
       <Filter>Header Files\Server\Handlers</Filter>
     </ClInclude>
+    <ClInclude Include="src\server\subsystems\offline_streaming.hpp">
+      <Filter>Header Files\Server\Subsystems</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\dllmain.cpp">
@@ -84,6 +87,9 @@
     </ClCompile>
     <ClCompile Include="src\server\handlers\fragment.cpp">
       <Filter>Source Files\Server\Handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\server\subsystems\offline_streaming.cpp">
+      <Filter>Source Files\Server\Subsystems</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
