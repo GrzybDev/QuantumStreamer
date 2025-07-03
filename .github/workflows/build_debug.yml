@@ -1,0 +1,54 @@
+name: Debug Build
+
+on:
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build
+    permissions: write-all
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Integrate vcpkg
+        run: vcpkg integrate install
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          queries: "security-extended,security-and-quality"
+          languages: cpp
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          output: sarif-results
+          upload: failure-only
+
+      - name: Filter SARIF file
+        uses: advanced-security/filter-sarif@v1
+        with:
+          patterns: |
+            -vcpkg_installed/*
+          input: sarif-results/cpp.sarif
+          output: sarif-results/cpp.sarif
+
+      - name: Upload SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: sarif-results/cpp.sarif
+
+      - name: Upload debug artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: DebugBuild
+          path: x64\Debug
