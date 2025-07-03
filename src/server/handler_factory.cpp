@@ -11,5 +11,10 @@ using Poco::Net::HTTPServerRequest;
 
 HTTPRequestHandler* RequestHandlerFactory::createRequestHandler(const HTTPServerRequest& request)
 {
+	if (request.getMethod() == HTTPRequest::HTTP_GET)
+	{
+		return new ErrorHandler(HTTPResponse::HTTP_NOT_FOUND);
+	}
+
 	return new ErrorHandler(HTTPResponse::HTTP_NOT_IMPLEMENTED);
 }
