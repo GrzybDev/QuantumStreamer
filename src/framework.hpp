@@ -49,6 +49,7 @@ static constexpr unsigned char VERSION_PATCH = 0;
 #include <Poco/DOM/Element.h>
 #include <Poco/DOM/Node.h>
 #include <Poco/DOM/NodeList.h>
+#include <Poco/DOM/Text.h>
 #include <Poco/Dynamic/Var.h>
 #include <Poco/JSON/Array.h>
 #include <Poco/JSON/Object.h>
