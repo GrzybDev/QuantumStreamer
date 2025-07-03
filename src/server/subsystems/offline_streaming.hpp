@@ -6,6 +6,9 @@ public:
 	[[nodiscard]] const char* name() const override;
 
 	std::string getLocalClientManifest(const std::string& episode_id);
+	std::string getLocalFragment(const std::string& episode_id, const std::string& track_name,
+	                             const std::string& bitrate,
+	                             const std::string& start_time);
 
 protected:
 	void initialize(Poco::Util::Application& app) override;
