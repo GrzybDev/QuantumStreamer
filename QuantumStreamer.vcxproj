@@ -107,6 +107,7 @@
     <ClInclude Include="src\pch.hpp" />
     <ClInclude Include="src\server\base_handler.hpp" />
     <ClInclude Include="src\server\main.hpp" />
+    <ClInclude Include="src\server\subsystems\video_list.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\server\handlers\error.cpp" />
@@ -118,6 +119,7 @@
     </ClCompile>
     <ClCompile Include="src\server\base_handler.cpp" />
     <ClCompile Include="src\server\main.cpp" />
+    <ClCompile Include="src\server\subsystems\video_list.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\dllproxy.def" />

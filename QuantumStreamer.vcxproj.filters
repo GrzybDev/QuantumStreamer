@@ -21,6 +21,12 @@
     <Filter Include="Source Files\Server\Handlers">
       <UniqueIdentifier>{1b88b42c-abbf-4816-9fc5-e980a94edf86}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Server\Subsystems">
+      <UniqueIdentifier>{dc49c65a-10af-4d65-9447-a44207d36d75}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Server\Subsystems">
+      <UniqueIdentifier>{29dc4a48-1ced-4ca1-ac0b-e586355e6aef}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\framework.hpp">
@@ -41,6 +47,9 @@
     <ClInclude Include="src\server\handlers\error.hpp">
       <Filter>Header Files\Server\Handlers</Filter>
     </ClInclude>
+    <ClInclude Include="src\server\subsystems\video_list.hpp">
+      <Filter>Header Files\Server\Subsystems</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\dllmain.cpp">
@@ -60,6 +69,9 @@
     </ClCompile>
     <ClCompile Include="src\server\handlers\error.cpp">
       <Filter>Source Files\Server\Handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\server\subsystems\video_list.cpp">
+      <Filter>Source Files\Server\Subsystems</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
