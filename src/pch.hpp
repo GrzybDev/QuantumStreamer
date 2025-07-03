@@ -8,6 +8,6 @@
 #define PCH_H
 
 // add headers that you want to pre-compile here
-#include "framework.h"
+#include "framework.hpp"
 
 #endif //PCH_H
