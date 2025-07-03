@@ -3,9 +3,10 @@
     {
       "name": "poco",
       "features": [
+        "json",
         "net",
         "util",
-        "json"
+        "xml"
       ]
     }
   ]
