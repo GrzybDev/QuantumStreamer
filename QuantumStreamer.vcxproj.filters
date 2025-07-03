@@ -15,6 +15,12 @@
     <Filter Include="Source Files\Server">
       <UniqueIdentifier>{aca46266-30c2-4bbb-938e-74ddd061dc5c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Server\Handlers">
+      <UniqueIdentifier>{0fe15ac1-dc4b-4357-8fb7-e04da89738eb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Server\Handlers">
+      <UniqueIdentifier>{1b88b42c-abbf-4816-9fc5-e980a94edf86}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\framework.hpp">
@@ -29,6 +35,9 @@
     <ClInclude Include="src\server\base_handler.hpp">
       <Filter>Header Files\Server</Filter>
     </ClInclude>
+    <ClInclude Include="src\server\handlers\error.hpp">
+      <Filter>Header Files\Server\Handlers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\dllmain.cpp">
@@ -42,6 +51,9 @@
     </ClCompile>
     <ClCompile Include="src\server\base_handler.cpp">
       <Filter>Source Files\Server</Filter>
+    </ClCompile>
+    <ClCompile Include="src\server\handlers\error.cpp">
+      <Filter>Source Files\Server\Handlers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
