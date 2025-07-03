@@ -44,13 +44,17 @@ static constexpr unsigned char VERSION_PATCH = 0;
 #include <Poco/Timespan.h>
 #include <Poco/URI.h>
 #include <Poco/DOM/DOMParser.h>
+#include <Poco/DOM/DOMWriter.h>
 #include <Poco/DOM/Document.h>
 #include <Poco/DOM/Element.h>
 #include <Poco/DOM/Node.h>
 #include <Poco/DOM/NodeList.h>
 #include <Poco/Dynamic/Var.h>
+#include <Poco/JSON/Array.h>
 #include <Poco/JSON/Object.h>
 #include <Poco/JSON/Parser.h>
+#include <Poco/MongoDB/Array.h>
+#include <Poco/MongoDB/Document.h>
 #include <Poco/Net/HTTPClientSession.h>
 #include <Poco/Net/HTTPMessage.h>
 #include <Poco/Net/HTTPRequest.h>
@@ -63,5 +67,6 @@ static constexpr unsigned char VERSION_PATCH = 0;
 #include <Poco/Net/HTTPServerResponse.h>
 #include <Poco/Net/ServerSocket.h>
 #include <Poco/SAX/InputSource.h>
+#include <Poco/XML/XMLWriter.h>
 #include <Poco/Util/Application.h>
 #include <Poco/Util/ServerApplication.h>

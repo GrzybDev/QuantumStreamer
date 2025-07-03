@@ -3,6 +3,7 @@
 
 #include "handler_factory.hpp"
 #include "subsystems/offline_streaming.hpp"
+#include "subsystems/subtitle_override.hpp"
 #include "subsystems/video_list.hpp"
 
 using Poco::AutoPtr;
@@ -33,6 +34,7 @@ void QuantumStreamer::initialize(Application& self)
 
 	addSubsystem(new VideoList);
 	addSubsystem(new OfflineStreaming);
+	addSubsystem(new SubtitleOverride);
 
 	ServerApplication::initialize(self);
 }
@@ -72,11 +74,13 @@ void QuantumStreamer::setupLogger() const
 	const int logLevelNetwork = config().getInt("Logger.LogLevel_Network", Message::PRIO_INFORMATION);
 	const int logLevelVideoList = config().getInt("Logger.LogLevel_VideoList", Message::PRIO_INFORMATION);
 	const int logLevelOfflineStreaming = config().getInt("Logger.LogLevel_OfflineStreaming", Message::PRIO_INFORMATION);
+	const int logLevelSubtitleOverride = config().getInt("Logger.LogLevel_SubtitleOverride", Message::PRIO_INFORMATION);
 
 	Logger::create("Core", pFormattingChannel, logLevelCore);
 	Logger::create("Network", pFormattingChannel, logLevelNetwork);
 	Logger::create("VideoList", pFormattingChannel, logLevelVideoList);
 	Logger::create("OfflineStreaming", pFormattingChannel, logLevelOfflineStreaming);
+	Logger::create("SubtitleOverride", pFormattingChannel, logLevelSubtitleOverride);
 }
 
 void QuantumStreamer::setupConsole()

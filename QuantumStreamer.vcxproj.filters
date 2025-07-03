@@ -59,6 +59,9 @@
     <ClInclude Include="src\server\subsystems\offline_streaming.hpp">
       <Filter>Header Files\Server\Subsystems</Filter>
     </ClInclude>
+    <ClInclude Include="src\server\subsystems\subtitle_override.hpp">
+      <Filter>Header Files\Server\Subsystems</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\dllmain.cpp">
@@ -89,6 +92,9 @@
       <Filter>Source Files\Server\Handlers</Filter>
     </ClCompile>
     <ClCompile Include="src\server\subsystems\offline_streaming.cpp">
+      <Filter>Source Files\Server\Subsystems</Filter>
+    </ClCompile>
+    <ClCompile Include="src\server\subsystems\subtitle_override.cpp">
       <Filter>Source Files\Server\Subsystems</Filter>
     </ClCompile>
   </ItemGroup>
