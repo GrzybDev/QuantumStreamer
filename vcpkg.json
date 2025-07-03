@@ -6,7 +6,8 @@
         "json",
         "net",
         "util",
-        "xml"
+        "xml",
+        "mongodb"
       ]
     }
   ]
