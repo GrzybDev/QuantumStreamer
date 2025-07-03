@@ -50,6 +50,9 @@
     <ClInclude Include="src\server\subsystems\video_list.hpp">
       <Filter>Header Files\Server\Subsystems</Filter>
     </ClInclude>
+    <ClInclude Include="src\server\handlers\manifest.hpp">
+      <Filter>Header Files\Server\Handlers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\dllmain.cpp">
@@ -72,6 +75,9 @@
     </ClCompile>
     <ClCompile Include="src\server\subsystems\video_list.cpp">
       <Filter>Source Files\Server\Subsystems</Filter>
+    </ClCompile>
+    <ClCompile Include="src\server\handlers\manifest.cpp">
+      <Filter>Source Files\Server\Handlers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

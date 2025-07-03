@@ -4,12 +4,15 @@ static constexpr unsigned char VERSION_MAJOR = 0;
 static constexpr unsigned char VERSION_MINOR = 1;
 static constexpr unsigned char VERSION_PATCH = 0;
 
+#define REMOTE_TIMEOUT 20 // seconds (Game seems to use 20 seconds till it tries to retry)
+
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 
 // Standard C++ Header Files
 #include <format>
 #include <fstream>
 #include <iostream>
+#include <regex>
 #include <string>
 #include <thread>
 #include <vector>
@@ -21,6 +24,7 @@ static constexpr unsigned char VERSION_PATCH = 0;
 // Poco Header Files
 #include <Poco/AutoPtr.h>
 #include <Poco/ConsoleChannel.h>
+#include <Poco/Exception.h>
 #include <Poco/File.h>
 #include <Poco/FileChannel.h>
 #include <Poco/FormattingChannel.h>
@@ -28,9 +32,15 @@ static constexpr unsigned char VERSION_PATCH = 0;
 #include <Poco/Message.h>
 #include <Poco/PatternFormatter.h>
 #include <Poco/SplitterChannel.h>
+#include <Poco/StreamCopier.h>
 #include <Poco/ThreadPool.h>
+#include <Poco/Timespan.h>
+#include <Poco/URI.h>
+#include <Poco/Dynamic/Var.h>
 #include <Poco/JSON/Object.h>
 #include <Poco/JSON/Parser.h>
+#include <Poco/Net/HTTPClientSession.h>
+#include <Poco/Net/HTTPMessage.h>
 #include <Poco/Net/HTTPRequest.h>
 #include <Poco/Net/HTTPRequestHandler.h>
 #include <Poco/Net/HTTPRequestHandlerFactory.h>
