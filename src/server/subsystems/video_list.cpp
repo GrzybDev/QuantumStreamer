@@ -59,3 +59,11 @@ void VideoList::uninitialize()
 {
 	video_list_->clear();
 }
+
+std::string VideoList::getManifestUrl(const std::string& episode_id)
+{
+	if (!video_list_->has(episode_id))
+		return {};
+
+	return video_list_->getValue<std::string>(episode_id);
+}
