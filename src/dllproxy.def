@@ -1,0 +1,25 @@
+LIBRARY "loc_x64_f"
+EXPORTS
+	??0StringTable@loc@@QEAA@AEBV01@@Z=loc_x64_f_o.??0StringTable@loc@@QEAA@AEBV01@@Z
+	??0StringTable@loc@@QEAA@XZ=loc_x64_f_o.??0StringTable@loc@@QEAA@XZ
+	??1StringTable@loc@@QEAA@XZ=loc_x64_f_o.??1StringTable@loc@@QEAA@XZ
+	??4StringTable@loc@@QEAAAEAV01@AEBV01@@Z=loc_x64_f_o.??4StringTable@loc@@QEAAAEAV01@AEBV01@@Z
+	??4WordWrap@@QEAAAEAV0@$$QEAV0@@Z=loc_x64_f_o.??4WordWrap@@QEAAAEAV0@$$QEAV0@@Z
+	??4WordWrap@@QEAAAEAV0@AEBV0@@Z=loc_x64_f_o.??4WordWrap@@QEAAAEAV0@AEBV0@@Z
+	?CanBreakLineAt@WordWrap@@SA_NPEB_W0@Z=loc_x64_f_o.?CanBreakLineAt@WordWrap@@SA_NPEB_W0@Z
+	?FindNextLine@WordWrap@@SAPEB_WPEB_WIPEAPEB_W@Z=loc_x64_f_o.?FindNextLine@WordWrap@@SAPEB_WPEB_WIPEAPEB_W@Z
+	?IsWhiteSpace@WordWrap@@SA_NPEB_W@Z=loc_x64_f_o.?IsWhiteSpace@WordWrap@@SA_NPEB_W@Z
+	?SetCallback@WordWrap@@SAXP6AI_W@ZP6AIXZ@Z=loc_x64_f_o.?SetCallback@WordWrap@@SAXP6AI_W@ZP6AIXZ@Z
+	?addStringTable@StringTable@loc@@QEAAXAEAVDocument@xml@@@Z=loc_x64_f_o.?addStringTable@StringTable@loc@@QEAAXAEAVDocument@xml@@@Z
+	?convertToWString@StringTable@loc@@SAXAEBV?$InplaceString@$0IA@@r@@AEAV?$InplaceWString@$0IA@@4@@Z=loc_x64_f_o.?convertToWString@StringTable@loc@@SAXAEBV?$InplaceString@$0IA@@r@@AEAV?$InplaceWString@$0IA@@4@@Z
+	?convertToWString_External@StringTable@loc@@SAXAEBV?$InplaceString@$0IA@@r@@AEAV?$InplaceWString@$0IA@@4@@Z=loc_x64_f_o.?convertToWString_External@StringTable@loc@@SAXAEBV?$InplaceString@$0IA@@r@@AEAV?$InplaceWString@$0IA@@4@@Z
+	?fillCodeLocaleTable@StringTable@loc@@KAXXZ=loc_x64_f_o.?fillCodeLocaleTable@StringTable@loc@@KAXXZ
+	?fixString@StringTable@loc@@QEAAXAEAPEB_WPEBD@Z=loc_x64_f_o.?fixString@StringTable@loc@@QEAAXAEAPEB_WPEBD@Z
+	?getInstance@StringTable@loc@@SAPEAV12@XZ=loc_x64_f_o.?getInstance@StringTable@loc@@SAPEAV12@XZ
+	?getStringById@StringTable@loc@@QEAAPEB_WPEBD0@Z=loc_x64_f_o.?getStringById@StringTable@loc@@QEAAPEB_WPEBD0@Z
+	?load@StringTable@loc@@QEAA_NPEAVFileProvider@12@@Z=loc_x64_f_o.?load@StringTable@loc@@QEAA_NPEAVFileProvider@12@@Z
+	?loadFromBinary@StringTable@loc@@SA_NPEBDAEAV?$PseudoMap@V?$InplaceString@$0IA@@r@@V?$InplaceWString@$0IA@@2@@r@@PEAVFileProvider@12@@Z=loc_x64_f_o.?loadFromBinary@StringTable@loc@@SA_NPEBDAEAV?$PseudoMap@V?$InplaceString@$0IA@@r@@V?$InplaceWString@$0IA@@2@@r@@PEAVFileProvider@12@@Z
+	?loadFromXML_RMD_Format@StringTable@loc@@SA_NPEBDAEAV?$PseudoMap@V?$InplaceString@$0IA@@r@@V?$InplaceWString@$0IA@@2@@r@@@Z=loc_x64_f_o.?loadFromXML_RMD_Format@StringTable@loc@@SA_NPEBDAEAV?$PseudoMap@V?$InplaceString@$0IA@@r@@V?$InplaceWString@$0IA@@2@@r@@@Z
+	?loadFromXml_RMD_Format@StringTable@loc@@SA_NAEAVDocument@xml@@PEBDAEAV?$PseudoMap@V?$InplaceString@$0IA@@r@@V?$InplaceWString@$0IA@@2@@r@@@Z=loc_x64_f_o.?loadFromXml_RMD_Format@StringTable@loc@@SA_NAEAVDocument@xml@@PEBDAEAV?$PseudoMap@V?$InplaceString@$0IA@@r@@V?$InplaceWString@$0IA@@2@@r@@@Z
+	?sm_codeLocaleDictionary@StringTable@loc@@1V?$map@V?$InplaceString@$0IA@@r@@V?$map@V?$InplaceString@$0IA@@r@@V?$InplaceWString@$0IA@@2@U?$less@V?$InplaceString@$0IA@@r@@@std@@V?$Allocator@V?$InplaceWString@$0IA@@r@@@2@@std@@U?$less@V?$InplaceString@$0IA@@r@@@4@V?$Allocator@V?$map@V?$InplaceString@$0IA@@r@@V?$InplaceWString@$0IA@@2@U?$less@V?$InplaceString@$0IA@@r@@@std@@V?$Allocator@V?$InplaceWString@$0IA@@r@@@2@@std@@@2@@std@@A=loc_x64_f_o.?sm_codeLocaleDictionary@StringTable@loc@@1V?$map@V?$InplaceString@$0IA@@r@@V?$map@V?$InplaceString@$0IA@@r@@V?$InplaceWString@$0IA@@2@U?$less@V?$InplaceString@$0IA@@r@@@std@@V?$Allocator@V?$InplaceWString@$0IA@@r@@@2@@std@@U?$less@V?$InplaceString@$0IA@@r@@@4@V?$Allocator@V?$map@V?$InplaceString@$0IA@@r@@V?$InplaceWString@$0IA@@2@U?$less@V?$InplaceString@$0IA@@r@@@std@@V?$Allocator@V?$InplaceWString@$0IA@@r@@@2@@std@@@2@@std@@A
+	?sm_pInstance@StringTable@loc@@1PEAV12@EA=loc_x64_f_o.?sm_pInstance@StringTable@loc@@1PEAV12@EA
