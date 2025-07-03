@@ -35,6 +35,9 @@
     <ClInclude Include="src\server\base_handler.hpp">
       <Filter>Header Files\Server</Filter>
     </ClInclude>
+    <ClInclude Include="src\server\handler_factory.hpp">
+      <Filter>Header Files\Server</Filter>
+    </ClInclude>
     <ClInclude Include="src\server\handlers\error.hpp">
       <Filter>Header Files\Server\Handlers</Filter>
     </ClInclude>
@@ -50,6 +53,9 @@
       <Filter>Source Files\Server</Filter>
     </ClCompile>
     <ClCompile Include="src\server\base_handler.cpp">
+      <Filter>Source Files\Server</Filter>
+    </ClCompile>
+    <ClCompile Include="src\server\handler_factory.cpp">
       <Filter>Source Files\Server</Filter>
     </ClCompile>
     <ClCompile Include="src\server\handlers\error.cpp">

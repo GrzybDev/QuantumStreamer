@@ -102,6 +102,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\server\handlers\error.hpp" />
+    <ClInclude Include="src\server\handler_factory.hpp" />
     <ClInclude Include="src\framework.hpp" />
     <ClInclude Include="src\pch.hpp" />
     <ClInclude Include="src\server\base_handler.hpp" />
@@ -109,6 +110,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\server\handlers\error.cpp" />
+    <ClCompile Include="src\server\handler_factory.cpp" />
     <ClCompile Include="src\dllmain.cpp" />
     <ClCompile Include="src\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

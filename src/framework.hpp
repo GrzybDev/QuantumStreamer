@@ -24,7 +24,9 @@ static constexpr unsigned char VERSION_PATCH = 0;
 #include <Poco/Message.h>
 #include <Poco/PatternFormatter.h>
 #include <Poco/SplitterChannel.h>
+#include <Poco/Net/HTTPRequest.h>
 #include <Poco/Net/HTTPRequestHandler.h>
+#include <Poco/Net/HTTPRequestHandlerFactory.h>
 #include <Poco/Net/HTTPResponse.h>
 #include <Poco/Net/HTTPServerRequest.h>
 #include <Poco/Net/HTTPServerResponse.h>
