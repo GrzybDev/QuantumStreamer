@@ -12,4 +12,8 @@ private:
 	std::string bitrate_;
 	std::string type_;
 	std::string start_time_;
+	std::string text_lang_code_;
+	bool is_text_stream_;
+
+	[[nodiscard]] std::string processSubtitleData(const std::string& data) const;
 };
