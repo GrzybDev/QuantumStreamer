@@ -89,3 +89,10 @@ std::string VideoList::getFragmentUrl(const std::string& episode_id, const std::
 
 	return fragmentUrl;
 }
+
+std::vector<std::string> VideoList::getEpisodeList()
+{
+	std::vector<std::string> episodes;
+	video_list_->getNames(episodes);
+	return episodes;
+}
