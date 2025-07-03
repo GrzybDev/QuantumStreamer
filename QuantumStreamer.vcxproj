@@ -102,6 +102,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\server\handlers\error.hpp" />
+    <ClInclude Include="src\server\handlers\fragment.hpp" />
     <ClInclude Include="src\server\handlers\manifest.hpp" />
     <ClInclude Include="src\server\handler_factory.hpp" />
     <ClInclude Include="src\framework.hpp" />
@@ -112,6 +113,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\server\handlers\error.cpp" />
+    <ClCompile Include="src\server\handlers\fragment.cpp" />
     <ClCompile Include="src\server\handlers\manifest.cpp" />
     <ClCompile Include="src\server\handler_factory.cpp" />
     <ClCompile Include="src\dllmain.cpp" />
