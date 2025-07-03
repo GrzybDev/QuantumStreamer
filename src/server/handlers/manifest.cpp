@@ -40,6 +40,16 @@ void ManifestRequestHandler::handleWithLogging(HTTPServerRequest& request, HTTPS
 
 	if (std::string localManifest = offlineStreaming.getLocalClientManifest(episode_id_); localManifest.empty())
 	{
+		if (app.config().getBool("Server.OfflineMode", false))
+		{
+			logger.warning("Offline mode is enabled, but the requested client manifest is not available locally: %s",
+			               episode_id_);
+
+			response.setStatusAndReason(HTTPResponse::HTTP_NOT_ACCEPTABLE);
+			response.send();
+			return;
+		}
+
 		// Call the manifest URL keeping all headers, query parameters, and body intact
 		// The only thing we need to change is the Host header to the manifest URL's host
 

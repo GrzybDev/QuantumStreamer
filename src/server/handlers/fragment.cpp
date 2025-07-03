@@ -48,6 +48,16 @@ void FragmentRequestHandler::handleWithLogging(HTTPServerRequest& request, HTTPS
 
 	if (localFragment.empty())
 	{
+		if (app.config().getBool("Server.OfflineMode", false))
+		{
+			logger.warning("Offline mode is enabled, but the requested fragment is not available locally: %s",
+			               episode_id_);
+
+			response.setStatusAndReason(HTTPResponse::HTTP_NOT_ACCEPTABLE);
+			response.send();
+			return;
+		}
+
 		// Call the fragment URL keeping all headers, query parameters, and body intact
 		// The only thing we need to change is the Host header to the fragment URL's host
 
