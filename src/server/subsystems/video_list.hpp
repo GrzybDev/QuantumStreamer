@@ -16,6 +16,7 @@ public:
 	                           const std::string& start_time);
 
 	std::vector<std::string> getEpisodeList();
+	void patch(unsigned short port);
 
 protected:
 	void initialize(Poco::Util::Application& app) override;
@@ -23,4 +24,6 @@ protected:
 
 private:
 	Poco::JSON::Object::Ptr video_list_;
+
+	Poco::JSON::Object::Ptr loadVideoList(const std::string& path) const;
 };
