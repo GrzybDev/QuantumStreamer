@@ -23,4 +23,6 @@ protected:
 
 private:
 	Poco::JSON::Object::Ptr video_list_;
+
+	Poco::JSON::Object::Ptr loadVideoList(const std::string& path) const;
 };
