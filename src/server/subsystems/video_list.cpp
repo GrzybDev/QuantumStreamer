@@ -103,3 +103,67 @@ Object::Ptr VideoList::loadVideoList(const std::string& path) const
 	return result.extract<Object::Ptr>();
 }
 
+
+void VideoList::patch(unsigned short port)
+{
+	Logger& logger = Logger::get(name());
+	logger.debug("Patching video list file...");
+
+	const Application& app = Application::instance();
+	const std::string videoListPath = app.config().getString("Server.VideoListPath", "./data/videoList_original.rmdj");
+	const std::string gameVideoListPath = "./data/videoList.rmdj";
+
+	if (!File(videoListPath).exists())
+	{
+		if (File(gameVideoListPath).exists())
+		{
+			logger.warning("Copying video list file from %s to %s...", gameVideoListPath, videoListPath);
+			File(gameVideoListPath).copyTo(videoListPath);
+		}
+		else
+		{
+			logger.error("No video list file found to patch: %s", videoListPath);
+			return;
+		}
+	}
+
+	video_list_ = loadVideoList(videoListPath);
+
+	// Build the patched video list
+	// Each episode id is a key, and the value is in format:
+	// http://127.0.0.1:<port>/<episode_id>/manifest
+
+	// Create a new JSON object for the patched video list
+	Object::Ptr patchedVideoList = new Object;
+
+	for (const auto& episodeId : getEpisodeList())
+	{
+		const std::string patchedUrl = std::format("http://127.0.0.1:{}/{}/manifest", port, episodeId);
+		patchedVideoList->set(episodeId, patchedUrl);
+	}
+
+	// Save the patched video list to the std::string
+	std::ostringstream oss;
+	Poco::JSON::Stringifier::stringify(patchedVideoList, oss, 4);
+
+	std::string patchedVideoListStr = oss.str();
+
+	// Encrypt the patched video list
+	for (size_t i = 0; i < patchedVideoListStr.size(); ++i)
+		patchedVideoListStr[i] ^= RMDJ_ENCRYPTION_KEY[i % 32];
+
+	std::ofstream outFile(gameVideoListPath, std::ios::binary | std::ios::trunc);
+	logger.debug("Writing patched video list to %s...", gameVideoListPath);
+
+	if (!outFile.is_open())
+	{
+		logger.error("Failed to open video list file for writing: %s", videoListPath);
+		return;
+	}
+
+	outFile.write(patchedVideoListStr.data(), patchedVideoListStr.size());
+	outFile.close();
+
+	logger.information("Video list file patched successfully! (Videos count: %d)",
+	                   static_cast<int>(patchedVideoList->size()));
+}

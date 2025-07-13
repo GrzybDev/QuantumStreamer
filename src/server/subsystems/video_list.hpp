@@ -16,6 +16,7 @@ public:
 	                           const std::string& start_time);
 
 	std::vector<std::string> getEpisodeList();
+	void patch(unsigned short port);
 
 protected:
 	void initialize(Poco::Util::Application& app) override;
