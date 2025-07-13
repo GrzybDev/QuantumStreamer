@@ -145,8 +145,14 @@ int QuantumStreamer::main(const std::vector<std::string>& args)
 	logger.debug("Max Threads: %d", maxThreads);
 
 	// set up the server socket
-	const unsigned short port = static_cast<unsigned short>(config().getInt("Server.Port", 10000));
+	const unsigned short port = static_cast<unsigned short>(config().getInt("Server.Port", 0));
 	const ServerSocket svs(port);
+
+	if (config().getBool("VideoList.PatchFile", true))
+	{
+		VideoList& videoList = instance().getSubsystem<VideoList>();
+		videoList.patch(svs.address().port());
+	}
 
 	// create the HTTP server instance
 	HTTPServer srv(new RequestHandlerFactory(), svs, pParams);
@@ -154,7 +160,7 @@ int QuantumStreamer::main(const std::vector<std::string>& args)
 	// start the server
 	srv.start();
 
-	logger.information("Started HTTP Server (Listening at port %d)", static_cast<int>(port));
+	logger.information("Started HTTP Server (Listening at port %d)", static_cast<int>(svs.address().port()));
 
 	// wait for termination signal
 	waitForTerminationRequest();
