@@ -80,25 +80,26 @@ The following formats are supported:
 In the config, you can set following values (dot seperates section and key)
 
 
-| Key                               | Description                                                             | Allowed Values                                                                    | Default Value                    |
-|:---------------------------------:|:-----------------------------------------------------------------------:|:---------------------------------------------------------------------------------:|:---------------------------------|
-| Logger.ShowConsole                | Show hook log in console                                                | Boolean                                                                           | false                            |
-| Logger.SaveToLogFile              | Save hook log to file                                                   | Boolean                                                                           | false                            |
-| Logger.LogFile                    | Path to where save log file                                             | String                                                                            | QuantumStreamer.log              |
-| Logger.LogLevel_Core              | Changes how detailed Core logging is                                    | [Poco::Message::Priority](https://docs.pocoproject.org/current/Poco.Message.html) | 6 (PRIO_INFORMATION)             |
-| Logger.LogLevel_Network           | Changes how detailed Network logging is (HTTP Requests/Responses)       | [Poco::Message::Priority](https://docs.pocoproject.org/current/Poco.Message.html) | 6 (PRIO_INFORMATION)             |
-| Logger.LogLevel_VideoList         | Changes how detailed Video List subsystem logging is                    | [Poco::Message::Priority](https://docs.pocoproject.org/current/Poco.Message.html) | 6 (PRIO_INFORMATION)             |
-| Logger.LogLevel_OfflineStreaming  | Changes how detailed Offline Streaming subsystem logging is             | [Poco::Message::Priority](https://docs.pocoproject.org/current/Poco.Message.html) | 6 (PRIO_INFORMATION)             |
-| Logger.LogLevel_SubtitleOverride  | Changes how detailed Subtitle Override subsystem logging is             | [Poco::Message::Priority](https://docs.pocoproject.org/current/Poco.Message.html) | 6 (PRIO_INFORMATION)             |
-| Server.EpisodesPath               | Path to where episodes data are located                                 | String                                                                            | ./videos/episodes                |
-| Server.MaxQueued                  | Max queued HTTP requests                                                | Integer                                                                           | 100                              |
-| Server.MaxThreads                 | Max threads (HTTP server)                                               | Integer                                                                           | Logical CPU count or 2 if failed |
-| Server.OfflineMode                | Disable online streaming, episodes stored locally will continue to work | Boolean                                                                           | false                            |
-| Server.Port                       | Port for HTTP server (game also have to point to this port)             | Unsigned short                                                                    | 10000                            |
-| Server.VideoListPath              | Path to original `videoList.rmdj` file                                  | String                                                                            | ./data/videoList_original.rmdj   |
-| Subtitles.ClosedCaptioning        | Show closed captions in subtitles                                       | Boolean                                                                           | false                            |
-| Subtitles.MusicNotes              | Show music notes in subtitles                                           | Boolean                                                                           | true                             |
-| Subtitles.EpisodeTitles           | Append episode title to text streams                                    | Boolean                                                                           | true                             |
+| Key                               | Description                                                                                   | Allowed Values                                                                    | Default Value                    |
+|:---------------------------------:|:---------------------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------:|:---------------------------------|
+| Logger.ShowConsole                | Show hook log in console                                                                      | Boolean                                                                           | false                            |
+| Logger.SaveToLogFile              | Save hook log to file                                                                         | Boolean                                                                           | false                            |
+| Logger.LogFile                    | Path to where save log file                                                                   | String                                                                            | `QuantumStreamer.log`            |
+| Logger.LogLevel_Core              | Changes how detailed Core logging is                                                          | [Poco::Message::Priority](https://docs.pocoproject.org/current/Poco.Message.html) | 6 (PRIO_INFORMATION)             |
+| Logger.LogLevel_Network           | Changes how detailed Network logging is (HTTP Requests/Responses)                             | [Poco::Message::Priority](https://docs.pocoproject.org/current/Poco.Message.html) | 6 (PRIO_INFORMATION)             |
+| Logger.LogLevel_VideoList         | Changes how detailed Video List subsystem logging is                                          | [Poco::Message::Priority](https://docs.pocoproject.org/current/Poco.Message.html) | 6 (PRIO_INFORMATION)             |
+| Logger.LogLevel_OfflineStreaming  | Changes how detailed Offline Streaming subsystem logging is                                   | [Poco::Message::Priority](https://docs.pocoproject.org/current/Poco.Message.html) | 6 (PRIO_INFORMATION)             |
+| Logger.LogLevel_SubtitleOverride  | Changes how detailed Subtitle Override subsystem logging is                                   | [Poco::Message::Priority](https://docs.pocoproject.org/current/Poco.Message.html) | 6 (PRIO_INFORMATION)             |
+| Server.EpisodesPath               | Path to where episodes data are located                                                       | String                                                                            | `./videos/episodes`              |
+| Server.MaxQueued                  | Max queued HTTP requests                                                                      | Integer                                                                           | 100                              |
+| Server.MaxThreads                 | Max threads (HTTP server)                                                                     | Integer                                                                           | Logical CPU count or 2 if failed |
+| Server.OfflineMode                | Disable online streaming, episodes stored locally will continue to work                       | Boolean                                                                           | false                            |
+| Server.Port                       | Port for HTTP server (game also have to point to this port), if 0 will use random unused port | Unsigned short                                                                    | 0                                |
+| Server.VideoListPath              | Path to original, unmodified `./data/videoList.rmdj` file                                     | String                                                                            | `./data/videoList_original.rmdj` |
+| Subtitles.ClosedCaptioning        | Show closed captions in subtitles                                                             | Boolean                                                                           | false                            |
+| Subtitles.MusicNotes              | Show music notes in subtitles                                                                 | Boolean                                                                           | true                             |
+| Subtitles.EpisodeTitles           | Append episode title to text streams                                                          | Boolean                                                                           | true                             |
+| VideoList.PatchFile               | Patch `./data/videoList.rmdj` to point to server on startup                                   | Boolean                                                                           | true                             |
 
 The default config should work for most of the users, but if you have special requirements you can change above settings.
 
@@ -116,9 +117,9 @@ Usage
 -----
 
 Initially, after installing the hook, with default config - nothing should change in-game.
-Quantum Streamer on game launch will load `Server.VideoListPath`, after that hook will scan `Server.EpisodesPath` directory for the locally stored episodes and/or captions_overrides.
+Quantum Streamer on game launch will try to load `Server.VideoListPath`, after that hook will scan `Server.EpisodesPath` directory for the locally stored episodes and/or captions_overrides.
 
-VideoList loaded by game (`data/videoList.rmdj`) has to point to the Quantum Streamer server, you can easily patch `videoList.rmdj` file using [QuantumFetcher](https://github.com/GrzybDev/QuantumFetcher.git) tool.
+VideoList loaded by game (`data/videoList.rmdj`) has to point to the Quantum Streamer server, by default Quantum Streamer will patch this file, but you can disable this behaviour by setting `VideoList.PatchFile` to false, but then, you have to patch that file manually - for that, you can use [QuantumFetcher](https://github.com/GrzybDev/QuantumFetcher.git) tool.
 
 Each episode data is expected to be in dedicated episode directory (e.g. `./videos/episodes/J1A-X1-X2` is where hook will look for episode `J1A-X1-X2` (assuming `Server.EpisodesPath` is not changed))
 Local episodes are expected to be in ISM Smooth Stream format:
