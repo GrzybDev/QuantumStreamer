@@ -1,7 +1,7 @@
 #pragma once
 
 static constexpr unsigned char VERSION_MAJOR = 1;
-static constexpr unsigned char VERSION_MINOR = 0;
+static constexpr unsigned char VERSION_MINOR = 1;
 static constexpr unsigned char VERSION_PATCH = 0;
 
 #define BLOCK_MDAT "mdat"
