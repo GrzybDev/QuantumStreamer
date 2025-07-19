@@ -10,6 +10,8 @@ public:
 	                             const std::string& bitrate,
 	                             const std::string& start_time);
 
+	void preload();
+
 protected:
 	void initialize(Poco::Util::Application& app) override;
 	void uninitialize() override;

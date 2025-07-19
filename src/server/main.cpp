@@ -152,6 +152,9 @@ int QuantumStreamer::main(const std::vector<std::string>& args)
 	{
 		VideoList& videoList = instance().getSubsystem<VideoList>();
 		videoList.patch(svs.address().port());
+
+		OfflineStreaming& offlineStreaming = instance().getSubsystem<OfflineStreaming>();
+		offlineStreaming.preload();
 	}
 
 	// create the HTTP server instance

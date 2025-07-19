@@ -23,6 +23,19 @@ const char* OfflineStreaming::name() const
 
 void OfflineStreaming::initialize(Application& app)
 {
+	if (!app.config().getBool("VideoList.PatchFile", true))
+		preload();
+}
+
+void OfflineStreaming::uninitialize()
+{
+	streams_.clear();
+}
+
+void OfflineStreaming::preload()
+{
+	Application& app = Application::instance();
+
 	Logger& logger = Logger::get(name());
 	logger.information("Initializing offline playback subsystem...");
 
@@ -81,11 +94,6 @@ void OfflineStreaming::initialize(Application& app)
 
 	logger.information("%s episodes are ready to offline playback!",
 	                   std::to_string(streams_.size()));
-}
-
-void OfflineStreaming::uninitialize()
-{
-	streams_.clear();
 }
 
 void OfflineStreaming::processMediaNodes(const std::string& tag_name, Document* doc, const std::string& episode_id,
