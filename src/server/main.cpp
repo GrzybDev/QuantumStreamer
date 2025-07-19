@@ -155,6 +155,9 @@ int QuantumStreamer::main(const std::vector<std::string>& args)
 
 		OfflineStreaming& offlineStreaming = instance().getSubsystem<OfflineStreaming>();
 		offlineStreaming.preload();
+
+		SubtitleOverride& subtitleOverride = instance().getSubsystem<SubtitleOverride>();
+		subtitleOverride.load();
 	}
 
 	// create the HTTP server instance

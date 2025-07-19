@@ -8,6 +8,8 @@ public:
 	std::string overrideSubtitles(const std::string& episode_id, const std::string& track_name, std::string& data_raw,
 	                              bool is_episode_title_segment);
 
+	void load();
+
 protected:
 	void initialize(Poco::Util::Application& app) override;
 	void uninitialize() override;

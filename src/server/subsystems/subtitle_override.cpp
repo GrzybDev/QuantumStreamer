@@ -31,6 +31,20 @@ const char* SubtitleOverride::name() const
 
 void SubtitleOverride::initialize(Application& app)
 {
+	if (!app.config().getBool("VideoList.PatchFile", true))
+		load();
+}
+
+void SubtitleOverride::uninitialize()
+{
+	m_subtitle_overrides_.clear();
+	m_episode_titles_.clear();
+}
+
+void SubtitleOverride::load()
+{
+	const Application& app = Application::instance();
+
 	Logger& logger = Logger::get(name());
 	logger.debug("Loading subtitle overrides...");
 
@@ -78,12 +92,6 @@ void SubtitleOverride::initialize(Application& app)
 
 	logger.information("Successfully loaded caption overrides for %s episodes!",
 	                   std::to_string(m_subtitle_overrides_.size()));
-}
-
-void SubtitleOverride::uninitialize()
-{
-	m_subtitle_overrides_.clear();
-	m_episode_titles_.clear();
 }
 
 std::string SubtitleOverride::extractCaptionKey(const std::string& file_name)
