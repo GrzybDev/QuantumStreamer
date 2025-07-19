@@ -2,7 +2,7 @@
 
 static constexpr unsigned char VERSION_MAJOR = 1;
 static constexpr unsigned char VERSION_MINOR = 1;
-static constexpr unsigned char VERSION_PATCH = 0;
+static constexpr unsigned char VERSION_PATCH = 1;
 
 #define BLOCK_MDAT "mdat"
 #define BLOCK_MFRA "mfra"
