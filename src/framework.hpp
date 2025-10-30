@@ -1,6 +1,6 @@
 #pragma once
 
-static const char * VERSION = "1.1.1";
+static const char * VERSION = "1.1.2";
 
 #define BLOCK_MDAT "mdat"
 #define BLOCK_MFRA "mfra"
