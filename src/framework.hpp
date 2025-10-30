@@ -1,8 +1,6 @@
 #pragma once
 
-static constexpr unsigned char VERSION_MAJOR = 1;
-static constexpr unsigned char VERSION_MINOR = 1;
-static constexpr unsigned char VERSION_PATCH = 1;
+static const char * VERSION = "1.1.1";
 
 #define BLOCK_MDAT "mdat"
 #define BLOCK_MFRA "mfra"

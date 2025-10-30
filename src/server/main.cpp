@@ -26,7 +26,7 @@ void QuantumStreamer::initialize(Application& self)
 	setupLogger();
 
 	self.logger().notice("Quantum Streamer %s by Marek Grzyb (@GrzybDev)",
-	                     std::format("v{}.{}.{}", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH));
+	                     std::format("v{}", VERSION));
 	self.logger().notice("Homepage: https://grzyb.dev/app/QuantumStreamer");
 	self.logger().notice("Source code: https://github.com/GrzybDev/QuantumStreamer");
 	self.logger().notice("Noticed a bug? Fill a bug report here: https://github.com/GrzybDev/QuantumStreamer/issues");
