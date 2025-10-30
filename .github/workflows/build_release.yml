@@ -5,33 +5,112 @@ on:
     types: [published]
 
   workflow_dispatch:
+    inputs:
+      version_type:
+        type: choice
+        description: 'Version Type'
+        required: true
+        default: rebuild
+        options:
+          - rebuild
+          - patch
+          - minor
+          - major
+      publish_release:
+        description: "Publish Release"
+        type: boolean
+        required: true
+        default: true
 
 jobs:
-  build:
-    name: Build
-    permissions: write-all
+    bump_version:
+        name: Bump Version
+        runs-on: ubuntu-latest
+        permissions: write-all
+        outputs:
+          current_version: ${{ steps.get_version.outputs.current_version }}
+          new_version: ${{ steps.bump.outputs.current-version || steps.bump_manual.outputs.current-version }}
+        steps:
+            - uses: actions/checkout@v4
+            - uses: fregante/setup-git-user@v2
+            
+            - name: Install bump-my-version
+              run: pip install bump-my-version
 
-    runs-on: windows-latest
+            - name: Get current version
+              id: get_version
+              if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.version_type == 'rebuild' }}
+              run: echo "current_version=$(bump-my-version show current_version)" >> $GITHUB_OUTPUT
 
-    steps:
-      - uses: actions/checkout@v4
+            - name: Bump version
+              id: bump
+              if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.version_type != 'rebuild' }}
+              run: |
+                echo "previous-version=$(bump-my-version show current_version)" >> $GITHUB_OUTPUT
+                bump-my-version bump ${{ inputs.version_type }}
+                ([[ $? -gt 0 ]] && echo "bumped=false" || echo "bumped=true") >> $GITHUB_OUTPUT
+                echo "current-version=$(bump-my-version show current_version)" >> $GITHUB_OUTPUT
 
-      - name: Add msbuild to PATH
-        uses: microsoft/setup-msbuild@v2
+            - name: Bump version (Manual)
+              id: bump_manual
+              if: ${{ github.event_name == 'release' }}
+              run: |
+                echo "previous-version=$(bump-my-version show current_version)" >> $GITHUB_OUTPUT
+                bump-my-version bump --new-version ${{ github.ref_name }}
+                ([[ $? -gt 0 ]] && echo "bumped=false" || echo "bumped=true") >> $GITHUB_OUTPUT
+                echo "current-version=$(bump-my-version show current_version)" >> $GITHUB_OUTPUT
 
-      - name: Integrate vcpkg
-        run: vcpkg integrate install
+            - name: Push changes to GitHub
+              uses: ad-m/github-push-action@master
+              with:
+                force: true
 
-      - name: Build
-        run: msbuild QuantumStreamer.sln -property:Configuration=Release
+    build:
+        name: Build
+        permissions: write-all
+        needs: bump_version
+        runs-on: windows-latest
 
-      - name: Upload release artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ReleaseBuild
-          path: x64\Release
+        steps:
+          - uses: actions/checkout@v4
+            if: ${{ github.event_name == 'release' || github.event.inputs.version_type == 'rebuild' }}
 
-      - name: Upload Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: ./x64/Release/loc_x64_f.dll
+          - uses: actions/checkout@v4
+            if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.version_type != 'rebuild' }}
+            with:
+              ref: v${{ needs.bump_version.outputs.new_version }}
+
+          - name: Add msbuild to PATH
+            uses: microsoft/setup-msbuild@v2
+
+          - name: Integrate vcpkg
+            run: vcpkg integrate install
+
+          - name: Build
+            run: msbuild QuantumStreamer.sln -property:Configuration=Release
+
+          - name: Upload release artifact
+            uses: actions/upload-artifact@v4
+            with:
+              name: ReleaseBuild
+              path: x64\Release
+
+          - name: Upload Release (manual)
+            if: ${{ github.event_name == 'release' }}
+            uses: softprops/action-gh-release@v2
+            with:
+              files: ./x64/Release/loc_x64_f.dll
+            
+          - name: Upload Release
+            if: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.publish_release == 'true' && github.event.inputs.version_type != 'rebuild') || github.event_name == 'release' }}
+            uses: softprops/action-gh-release@v2
+            with:
+              files: ./x64/Release/loc_x64_f.dll
+              tag_name: v${{ needs.bump_version.outputs.new_version }}
+
+          - name: Upload Re-Release
+            if: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.publish_release == 'true' && github.event.inputs.version_type == 'rebuild') && github.event_name != 'release' }}
+            uses: softprops/action-gh-release@v2
+            with:
+              files: ./x64/Release/loc_x64_f.dll
+              tag_name: v${{ needs.bump_version.outputs.current_version }}

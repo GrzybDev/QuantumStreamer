@@ -1,0 +1,9 @@
+[tool.bumpversion]
+current_version = "1.1.1"
+commit = true
+tag = true
+
+[[tool.bumpversion.files]]
+filename = "src/framework.hpp"
+search = "static const char * VERSION = \"{current_version}\""
+replace = "static const char * VERSION = \"{new_version}\""
