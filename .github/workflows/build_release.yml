@@ -1,9 +1,6 @@
 name: Release Build
 
 on:
-  release:
-    types: [published]
-
   workflow_dispatch:
     inputs:
       version_type:
@@ -16,11 +13,6 @@ on:
           - patch
           - minor
           - major
-      publish_release:
-        description: "Publish Release"
-        type: boolean
-        required: true
-        default: true
 
 jobs:
     bump_version:
@@ -28,8 +20,8 @@ jobs:
         runs-on: ubuntu-latest
         permissions: write-all
         outputs:
-          current_version: ${{ steps.get_version.outputs.current_version }}
-          new_version: ${{ steps.bump.outputs.current-version || steps.bump_manual.outputs.current-version }}
+          current_version: ${{ steps.get_version.outputs.current_version || steps.bump.outputs.current_version || steps.bump_manual.outputs.current_version }}
+          new_version: ${{ steps.bump.outputs.new_version || steps.bump_manual.outputs.new_version }}
         steps:
             - uses: actions/checkout@v4
             - uses: fregante/setup-git-user@v2
@@ -46,19 +38,19 @@ jobs:
               id: bump
               if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.version_type != 'rebuild' }}
               run: |
-                echo "previous-version=$(bump-my-version show current_version)" >> $GITHUB_OUTPUT
+                echo "current_version=$(bump-my-version show current_version)" >> $GITHUB_OUTPUT
                 bump-my-version bump ${{ inputs.version_type }}
                 ([[ $? -gt 0 ]] && echo "bumped=false" || echo "bumped=true") >> $GITHUB_OUTPUT
-                echo "current-version=$(bump-my-version show current_version)" >> $GITHUB_OUTPUT
+                echo "new_version=$(bump-my-version show current_version)" >> $GITHUB_OUTPUT
 
             - name: Bump version (Manual)
               id: bump_manual
               if: ${{ github.event_name == 'release' }}
               run: |
-                echo "previous-version=$(bump-my-version show current_version)" >> $GITHUB_OUTPUT
+                echo "current_version=$(bump-my-version show current_version)" >> $GITHUB_OUTPUT
                 bump-my-version bump --new-version ${{ github.ref_name }}
                 ([[ $? -gt 0 ]] && echo "bumped=false" || echo "bumped=true") >> $GITHUB_OUTPUT
-                echo "current-version=$(bump-my-version show current_version)" >> $GITHUB_OUTPUT
+                echo "new_version=$(bump-my-version show current_version)" >> $GITHUB_OUTPUT
 
             - name: Push changes to GitHub
               uses: ad-m/github-push-action@master
@@ -87,30 +79,14 @@ jobs:
             run: vcpkg integrate install
 
           - name: Build
-            run: msbuild QuantumStreamer.sln -property:Configuration=Release
+            run: msbuild ${{ github.event.repository.name }}.sln -property:Configuration=Release
 
-          - name: Upload release artifact
-            uses: actions/upload-artifact@v4
+          - name: Upload windows release for code signing
+            uses: wearesection/sftp-action@1.0.1
             with:
-              name: ReleaseBuild
-              path: x64\Release
-
-          - name: Upload Release (manual)
-            if: ${{ github.event_name == 'release' }}
-            uses: softprops/action-gh-release@v2
-            with:
-              files: ./x64/Release/loc_x64_f.dll
-            
-          - name: Upload Release
-            if: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.publish_release == 'true' && github.event.inputs.version_type != 'rebuild') || github.event_name == 'release' }}
-            uses: softprops/action-gh-release@v2
-            with:
-              files: ./x64/Release/loc_x64_f.dll
-              tag_name: v${{ needs.bump_version.outputs.new_version }}
-
-          - name: Upload Re-Release
-            if: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.publish_release == 'true' && github.event.inputs.version_type == 'rebuild') && github.event_name != 'release' }}
-            uses: softprops/action-gh-release@v2
-            with:
-              files: ./x64/Release/loc_x64_f.dll
-              tag_name: v${{ needs.bump_version.outputs.current_version }}
+              host: ${{ secrets.SFTP_HOST }}
+              port: ${{ secrets.SFTP_PORT }}
+              username: runner
+              privateKey: ${{ secrets.SFTP_PRIVATE_KEY }}
+              localPath: ./x64/Release/loc_x64_f.dll
+              remotePath: /artifacts/${{ github.event.repository.name }}/v${{ needs.bump_version.outputs.new_version || needs.bump_version.outputs.current_version }}/loc_x64_f.dll
