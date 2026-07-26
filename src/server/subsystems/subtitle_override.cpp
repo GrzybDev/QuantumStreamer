@@ -2,17 +2,15 @@
 #include "subtitle_override.hpp"
 
 #include "video_list.hpp"
+#include <Poco/String.h>
+#include <algorithm>
+#include <cmath>
 
 using Poco::AutoPtr;
-using Poco::BinaryReader;
 using Poco::DirectoryIterator;
 using Poco::File;
 using Poco::Logger;
 using Poco::Path;
-using Poco::Dynamic::Var;
-using Poco::JSON::Parser;
-using Poco::JSON::Object;
-using Poco::MongoDB::Document;
 using Poco::Util::Application;
 using Poco::XML::DOMWriter;
 using Poco::XML::Element;
@@ -21,8 +19,6 @@ using Poco::XML::DOMParser;
 using Poco::XML::Node;
 using Poco::XML::NodeList;
 using Poco::XML::XMLWriter;
-using json_array = Poco::JSON::Array;
-using bson_array = Poco::MongoDB::Array;
 
 const char* SubtitleOverride::name() const
 {
@@ -38,7 +34,6 @@ void SubtitleOverride::initialize(Application& app)
 void SubtitleOverride::uninitialize()
 {
 	m_subtitle_overrides_.clear();
-	m_episode_titles_.clear();
 }
 
 void SubtitleOverride::load()
@@ -50,11 +45,9 @@ void SubtitleOverride::load()
 
 	closed_captioning_ = app.config().getBool("Subtitles.ClosedCaptioning", false);
 	music_notes_ = app.config().getBool("Subtitles.MusicNotes", true);
-	episode_titles_ = app.config().getBool("Subtitles.EpisodeTitles", true);
 
 	logger.information("Closed captioning is %s", std::string(closed_captioning_ ? "enabled" : "disabled"));
 	logger.information("Music notes are %s", std::string(music_notes_ ? "enabled" : "disabled"));
-	logger.information("%s append episode titles to streams", std::string(episode_titles_ ? "Will" : "Will not"));
 
 	const std::string episodesPath = app.config().getString("Server.EpisodesPath", "./videos/episodes");
 	VideoList& videoList = app.getSubsystem<VideoList>();
@@ -65,7 +58,7 @@ void SubtitleOverride::load()
 		File episodeDir(episodesPath + "/" + episodeId);
 		if (!(episodeDir.exists() && episodeDir.isDirectory())) continue;
 
-		std::map<std::string, std::vector<std::string>> overrides;
+		std::map<std::string, std::vector<SrtSegment>> overrides;
 
 		for (DirectoryIterator it(episodeDir), end; it != end; ++it)
 		{
@@ -73,12 +66,10 @@ void SubtitleOverride::load()
 			const std::string& fileName = filePath.getFileName();
 			std::string extension = Path(fileName).getExtension();
 
-			if (fileName.find("_captions_override") == std::string::npos) continue;
+			if (fileName.find("_captions") == std::string::npos) continue;
 
-			if (extension == "json")
-				parseJsonOverride(filePath.toString(), fileName, episodeId, overrides);
-			else if (extension == "bson")
-				parseBsonOverride(filePath.toString(), fileName, episodeId, overrides);
+			if (extension == "srt")
+				parseSrtOverride(filePath.toString(), fileName, episodeId, overrides);
 		}
 
 		if (overrides.empty())
@@ -96,15 +87,63 @@ void SubtitleOverride::load()
 
 std::string SubtitleOverride::extractCaptionKey(const std::string& file_name)
 {
-	const std::string baseName = Path(file_name).getFileName();
-	const auto underscorePos = baseName.find_last_of('_');
-	const auto dotPos = baseName.find_last_of('.');
-	return baseName.substr(0, std::min(underscorePos, dotPos));
+	return Path(file_name).getBaseName();
 }
 
-void SubtitleOverride::parseJsonOverride(const std::string& path, const std::string& file_name,
-                                         const std::string& episode_id,
-                                         std::map<std::string, std::vector<std::string>>& overrides)
+double SubtitleOverride::parseSrtTime(const std::string& time_str)
+{
+	// Format: HH:MM:SS,MMM
+	int h = 0, m = 0;
+	double s = 0.0;
+
+	auto firstColon = time_str.find(':');
+	auto secondColon = time_str.find(':', firstColon + 1);
+
+	if (firstColon != std::string::npos && secondColon != std::string::npos)
+	{
+		h = std::stoi(time_str.substr(0, firstColon));
+		m = std::stoi(time_str.substr(firstColon + 1, secondColon - firstColon - 1));
+		std::string secStr = time_str.substr(secondColon + 1);
+		std::replace(secStr.begin(), secStr.end(), ',', '.');
+		s = std::stod(secStr);
+	}
+
+	return h * 3600.0 + m * 60.0 + s;
+}
+
+double SubtitleOverride::parseTtmlTime(const std::string& time_str)
+{
+	// Format: HH:MM:SS.MMM
+	int h = 0, m = 0;
+	double s = 0.0;
+
+	auto firstColon = time_str.find(':');
+	auto secondColon = time_str.find(':', firstColon + 1);
+
+	if (firstColon != std::string::npos && secondColon != std::string::npos)
+	{
+		h = std::stoi(time_str.substr(0, firstColon));
+		m = std::stoi(time_str.substr(firstColon + 1, secondColon - firstColon - 1));
+		s = std::stod(time_str.substr(secondColon + 1));
+	}
+
+	return h * 3600.0 + m * 60.0 + s;
+}
+
+std::string SubtitleOverride::formatTtmlTime(double time_sec)
+{
+	int h = static_cast<int>(time_sec / 3600);
+	int m = static_cast<int>(std::fmod(time_sec, 3600) / 60);
+	double s = std::fmod(time_sec, 60);
+
+	char buffer[32];
+	snprintf(buffer, sizeof(buffer), "%02d:%02d:%06.3f", h, m, s);
+	return std::string(buffer);
+}
+
+void SubtitleOverride::parseSrtOverride(const std::string& path, const std::string& file_name,
+                                        const std::string& episode_id,
+                                        std::map<std::string, std::vector<SrtSegment>>& overrides)
 {
 	Logger& logger = Logger::get(name());
 
@@ -115,88 +154,50 @@ void SubtitleOverride::parseJsonOverride(const std::string& path, const std::str
 		return;
 	}
 
-	Parser parser;
-	const Var result = parser.parse(file);
-	const auto& jsonObject = result.extract<Object::Ptr>();
-	file.close();
+	std::vector<SrtSegment> segments;
+	std::string line;
 
-	json_array::Ptr segmentsArray = jsonObject->getArray("segments");
-	if (segmentsArray.isNull())
+	while (std::getline(file, line))
 	{
-		logger.warning("No segments found in subtitle override file: %s", path);
-		return;
-	}
+		Poco::trimInPlace(line);
+		if (line.empty()) continue;
 
-	std::vector<std::string> segments;
-	for (size_t i = 0; i < segmentsArray->size(); ++i)
-		segments.push_back(segmentsArray->getElement<std::string>(static_cast<unsigned int>(i)));
+		// The next line is the timestamps
+		std::string timeLine;
+		if (!std::getline(file, timeLine)) break;
+		Poco::trimInPlace(timeLine);
+
+		auto arrowPos = timeLine.find(" --> ");
+		if (arrowPos == std::string::npos) continue;
+
+		std::string beginTimeStr = timeLine.substr(0, arrowPos);
+		std::string endTimeStr = timeLine.substr(arrowPos + 5);
+
+		double beginTime = parseSrtTime(beginTimeStr);
+		double endTime = parseSrtTime(endTimeStr);
+
+		// The next lines are the text until an empty line
+		std::string text;
+		while (std::getline(file, line))
+		{
+			Poco::trimInPlace(line);
+			if (line.empty()) break;
+			if (!text.empty()) text += "\n";
+			text += line;
+		}
+
+		segments.push_back({beginTime, endTime, text});
+	}
 
 	std::string captionKey = extractCaptionKey(file_name);
 	overrides[captionKey] = std::move(segments);
 
-	if (jsonObject->has("episode_title"))
-	{
-		std::string trackName = file_name;
-		trackName = trackName.substr(0, trackName.find("_override"));
-
-		const std::string epTitleKey = episode_id + "_" + trackName;
-		m_episode_titles_[epTitleKey] = jsonObject->getValue<std::string>("episode_title");
-	}
-
-	logger.debug("Loaded %s caption overrides from JSON for track %s in episode %s",
-	             std::to_string(overrides[captionKey].size()), captionKey, episode_id);
-}
-
-void SubtitleOverride::parseBsonOverride(const std::string& path, const std::string& file_name,
-                                         const std::string& episode_id,
-                                         std::map<std::string, std::vector<std::string>>& overrides)
-{
-	Logger& logger = Logger::get(name());
-
-	std::string captionKey = extractCaptionKey(file_name);
-	if (overrides.contains(captionKey))
-	{
-		logger.debug("Skipping BSON override for %s (already loaded from JSON)", captionKey);
-		return;
-	}
-
-	std::ifstream file(path, std::ios::binary);
-	if (!file)
-	{
-		logger.error("Failed to open BSON subtitle override file: %s", path);
-		return;
-	}
-
-	BinaryReader reader(file);
-	Document document;
-	document.read(reader);
-	file.close();
-
-	std::vector<std::string> segments;
-	if (document.isType<bson_array::Ptr>("segments"))
-	{
-		auto& array = document.get<bson_array::Ptr>("segments");
-		for (size_t i = 0; i < array->size(); ++i)
-			segments.push_back(array->get<std::string>(i));
-	}
-
-	overrides[captionKey] = std::move(segments);
-
-	if (document.exists("episode_title"))
-	{
-		std::string trackName = file_name;
-		trackName = trackName.substr(0, trackName.find("_override"));
-
-		const std::string epTitleKey = episode_id + "_" + trackName;
-		m_episode_titles_[epTitleKey] = document.get<std::string>("episode_title");
-	}
-
-	logger.debug("Loaded %s caption overrides from GSON for track %s in episode %s",
+	logger.debug("Loaded %s caption overrides for track %s in episode %s",
 	             std::to_string(overrides[captionKey].size()), captionKey, episode_id);
 }
 
 std::string SubtitleOverride::overrideSubtitles(const std::string& episode_id, const std::string& track_name,
-                                                std::string& data_raw, bool is_episode_title_segment)
+                                                std::string& data_raw, const std::string& start_time)
 {
 	Logger& logger = Logger::get(name());
 
@@ -214,89 +215,80 @@ std::string SubtitleOverride::overrideSubtitles(const std::string& episode_id, c
 	InputSource src(xmlStream);
 	DOMParser parser;
 	AutoPtr doc = parser.parse(&src);
+	NodeList* divList = doc->getElementsByTagName("div");
+	if (divList->length() == 0) return data_raw;
+	auto firstDiv = dynamic_cast<Element*>(divList->item(0));
 
 	NodeList* pList = doc->getElementsByTagName("p");
 
+	double frag_time_sec = 0.0;
+	if (!start_time.empty())
+		frag_time_sec = std::stoull(start_time) / 10000000.0;
+
+	// Calculate maximum relative end time to estimate fragment duration
+	double max_rel_end = 0.0;
+	std::vector<Node*> nodesToRemove;
 	for (unsigned long i = 0; i < pList->length(); ++i)
 	{
 		auto pElem = dynamic_cast<Element*>(pList->item(i));
-		auto span = pElem->getElementsByTagName("span")->item(0);
-
-		std::string segmentIdStr = pElem->getAttribute("xml:id");
-
-		std::string origText = span->innerText();
-		std::string newText;
-
-		if (int segmentId = std::stoi(segmentIdStr.substr(1)); segmentId >= 0 && segmentId < segments.size())
-			newText = segments[segmentId];
-		else
-			newText = origText;
-
-		if (!closed_captioning_)
-		{
-			// Remove closed captioning
-			std::regex ccRegex(R"([ -]*\[ .* \])");
-			newText = std::regex_replace(newText, ccRegex, "");
-		}
-
-		if (!music_notes_)
-		{
-			// Remove music notes
-			std::string pattern;
-			pattern += "\xE2\x99\xAA"; // UTF-8 encoding of music note (U+266A)
-			pattern += "\xE2\x99\xAA";
-
-			std::regex musicNoteRegex(pattern);
-			newText = std::regex_replace(newText, musicNoteRegex, "");
-		}
-
-		while (Node* child = span->firstChild())
-		{
-			span->removeChild(child);
-			child->release();
-		}
-
-		AutoPtr newSpanContent = doc->createTextNode(newText);
-		span->appendChild(newSpanContent);
-
-		logger.trace("Episode: %s (%s), Segment: %s ('%s' -> '%s')", episode_id, track_name, segmentIdStr, origText,
-		             newText);
+		double rel_end = parseTtmlTime(pElem->getAttribute("end"));
+		if (rel_end > max_rel_end)
+			max_rel_end = rel_end;
+		nodesToRemove.push_back(pElem);
 	}
 
-	if (episode_titles_ && is_episode_title_segment)
+	// Remove existing <p> elements
+	for (auto node : nodesToRemove)
 	{
-		if (std::string epTitleKey = episode_id + "_" + track_name; m_episode_titles_.contains(epTitleKey))
+		node->parentNode()->removeChild(node);
+		node->release();
+	}
+
+	// Default duration is at least 2.5 seconds to ensure sufficient overlap window
+	double fragment_duration = std::max(max_rel_end, 2.5);
+
+	int pId = 1;
+	for (const auto& seg : segments)
+	{
+		// Check if the SRT segment overlaps with the current fragment
+		if (seg.end_time_sec > frag_time_sec && seg.begin_time_sec < frag_time_sec + fragment_duration)
 		{
-			// Create new <p> element for episode title
+			double rel_begin = std::max(0.0, seg.begin_time_sec - frag_time_sec);
+			double rel_end = seg.end_time_sec - frag_time_sec;
+
 			AutoPtr p = doc->createElement("p");
-			p->setAttribute("xml:id", "episode_title");
-			p->setAttribute("begin", "00:00:00.000");
-			p->setAttribute("end", "00:00:01.850");
+			p->setAttribute("xml:id", "p" + std::to_string(pId++));
+			p->setAttribute("begin", formatTtmlTime(rel_begin));
+			p->setAttribute("end", formatTtmlTime(rel_end));
 			p->setAttribute("region", "speaker");
 
-			// Create <span> child with style and text content
 			AutoPtr span = doc->createElement("span");
 			span->setAttribute("style", "textStyle");
 
-			// Create text node with episode title
-			AutoPtr textNode = doc->createTextNode(m_episode_titles_[epTitleKey]);
-			span->appendChild(textNode);
+			std::string newText = seg.text;
 
-			// Append the <span> to the <p>
+			if (!closed_captioning_)
+			{
+				std::regex ccRegex(R"([ -]*\[ .* \])");
+				newText = std::regex_replace(newText, ccRegex, "");
+			}
+
+			if (!music_notes_)
+			{
+				std::string pattern;
+				pattern += "\xE2\x99\xAA";
+				pattern += "\xE2\x99\xAA";
+				std::regex musicNoteRegex(pattern);
+				newText = std::regex_replace(newText, musicNoteRegex, "");
+			}
+
+			AutoPtr textNode = doc->createTextNode(newText);
+			span->appendChild(textNode);
 			p->appendChild(span);
 
-			// Add the new <p> element to the first <div> in the document
-			if (NodeList* divList = doc->getElementsByTagName("div"); divList->length() > 0)
-			{
-				auto firstDiv = dynamic_cast<Element*>(divList->item(0));
-				firstDiv->appendChild(p);
-				logger.trace("Added episode title '%s' to subtitles for episode %s", m_episode_titles_[epTitleKey],
-				             episode_id);
-			}
-			else
-			{
-				logger.warning("No <div> found in subtitles for episode %s to add episode title!", episode_id);
-			}
+			firstDiv->appendChild(p);
+
+			logger.trace("Episode: %s (%s), Subtitle Segment: p%d ('%s')", episode_id, track_name, pId - 1, newText);
 		}
 	}
 

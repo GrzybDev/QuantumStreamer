@@ -6,7 +6,7 @@ public:
 	[[nodiscard]] const char* name() const override;
 
 	std::string overrideSubtitles(const std::string& episode_id, const std::string& track_name, std::string& data_raw,
-	                              bool is_episode_title_segment);
+	                              const std::string& start_time);
 
 	void load();
 
@@ -15,17 +15,23 @@ protected:
 	void uninitialize() override;
 
 private:
-	std::map<std::string, std::map<std::string, std::vector<std::string>>> m_subtitle_overrides_;
-	std::map<std::string, std::string> m_episode_titles_;
+	struct SrtSegment
+	{
+		double begin_time_sec;
+		double end_time_sec;
+		std::string text;
+	};
+
+	std::map<std::string, std::map<std::string, std::vector<SrtSegment>>> m_subtitle_overrides_;
 
 	bool closed_captioning_ = false;
 	bool music_notes_ = false;
-	bool episode_titles_ = false;
 
 	static std::string extractCaptionKey(const std::string& file_name);
 
-	void parseJsonOverride(const std::string& path, const std::string& file_name, const std::string& episode_id,
-	                       std::map<std::string, std::vector<std::string>>& overrides);
-	void parseBsonOverride(const std::string& path, const std::string& file_name, const std::string& episode_id,
-	                       std::map<std::string, std::vector<std::string>>& overrides);
+	void parseSrtOverride(const std::string& path, const std::string& file_name, const std::string& episode_id,
+	                      std::map<std::string, std::vector<SrtSegment>>& overrides);
+	static double parseSrtTime(const std::string& time_str);
+	static double parseTtmlTime(const std::string& time_str);
+	static std::string formatTtmlTime(double time_sec);
 };

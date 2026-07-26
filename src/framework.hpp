@@ -1,13 +1,11 @@
 #pragma once
 
-static const char * VERSION = "1.1.2";
+static auto VERSION = "1.1.2";
 
 #define BLOCK_MDAT "mdat"
 #define BLOCK_MFRA "mfra"
 #define BLOCK_MOOF "moof"
 #define BLOCK_TFRA "tfra"
-
-#define EPISODE_TITLE_START_TIME "80080000"
 
 #define FLAGS_TO_SKIP 3
 #define REMOTE_TIMEOUT 20 // seconds (Game seems to use 20 seconds till it tries to retry)
@@ -54,8 +52,6 @@ static const char * VERSION = "1.1.2";
 #include <Poco/JSON/Array.h>
 #include <Poco/JSON/Object.h>
 #include <Poco/JSON/Parser.h>
-#include <Poco/MongoDB/Array.h>
-#include <Poco/MongoDB/Document.h>
 #include <Poco/Net/HTTPClientSession.h>
 #include <Poco/Net/HTTPMessage.h>
 #include <Poco/Net/HTTPRequest.h>

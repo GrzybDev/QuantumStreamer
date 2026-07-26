@@ -18,7 +18,7 @@ using Poco::Net::HTTPServerRequest;
 using Poco::Util::Application;
 
 FragmentRequestHandler::FragmentRequestHandler(std::string episode_id, std::string bitrate, std::string type,
-                                               std::string start_time):
+                                               std::string start_time) :
 	episode_id_(std::move(episode_id)),
 	bitrate_(std::move(bitrate)),
 	type_(std::move(type)),
@@ -179,7 +179,7 @@ std::string FragmentRequestHandler::processSubtitleData(const std::string& data)
 
 	const std::string newSubtitleData = subtitleOverride.overrideSubtitles(
 		episode_id_, type_, subtitleData,
-		start_time_ == EPISODE_TITLE_START_TIME);
+		start_time_);
 
 	mdatSize = static_cast<unsigned int>(newSubtitleData.size() + 8);
 
