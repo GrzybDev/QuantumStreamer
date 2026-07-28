@@ -42,7 +42,6 @@ Features
 - Subtitles override support (you can translate/edit subtitles in episodes, please use [QuantumFetcher](https://github.com/GrzybDev/QuantumFetcher.git) to get the original subtitles)
 - Dynamically add/remove closed captions
 - Dynamically add/remove music notes in captions
-- Dynamically add/remove episode title caption to title card
 
 Build Requirements
 ------------------
@@ -98,7 +97,6 @@ In the config, you can set following values (dot seperates section and key)
 | Server.VideoListPath              | Path to original, unmodified `./data/videoList.rmdj` file                                     | String                                                                            | `./data/videoList_original.rmdj` |
 | Subtitles.ClosedCaptioning        | Show closed captions in subtitles                                                             | Boolean                                                                           | false                            |
 | Subtitles.MusicNotes              | Show music notes in subtitles                                                                 | Boolean                                                                           | true                             |
-| Subtitles.EpisodeTitles           | Append episode title to text streams                                                          | Boolean                                                                           | true                             |
 | VideoList.PatchFile               | Patch `./data/videoList.rmdj` to point to server on startup                                   | Boolean                                                                           | true                             |
 
 The default config should work for most of the users, but if you have special requirements you can change above settings.
@@ -127,16 +125,7 @@ Local episodes are expected to be in ISM Smooth Stream format:
 `*.ism` (Server Manifest) should at least define `clientManifestRelativePath` in `head` section which should reference filename/relative path for client manifest file.
 All media files referenced in the Server Manifest will be loaded (if media file exist)
 
-Additionally, JSON or BSON files which are named `*_captions_override.?son` will be loaded, after that hook will replace captions in specific track (e.g. `enus_captions_override.json` will override `enus_captions` track) with the ones from the file, allowing you to translate or edit captions in the live action.
-
-Both JSON and BSON files are expected to have the same structure, example:
-
-```
-{
-  "episode_title": "Episode title goes here",
-  "segments": ["This is segment 0 (s0)", "This is segment 1 (s1)"]
-}
-```
+Additionally, SubRip (`.srt`) files which contain `_captions` in their filename will be loaded, after that hook will replace captions in specific track (e.g. `enus_captions.srt` will override `enus_captions` track) with the ones from the file, allowing you to translate or edit captions in the live action.
 
 Credits
 -------
