@@ -1,6 +1,6 @@
 #pragma once
 
-static auto VERSION = "1.1.2";
+static auto VERSION = "1.2.0";
 
 #define BLOCK_MDAT "mdat"
 #define BLOCK_MFRA "mfra"
