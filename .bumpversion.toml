@@ -5,5 +5,5 @@ tag = true
 
 [[tool.bumpversion.files]]
 filename = "src/framework.hpp"
-search = "static const char * VERSION = \"{current_version}\""
-replace = "static const char * VERSION = \"{new_version}\""
+search = "static auto VERSION = \"{current_version}\""
+replace = "static auto VERSION = \"{new_version}\""
