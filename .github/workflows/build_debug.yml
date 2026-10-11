@@ -14,7 +14,7 @@ jobs:
     runs-on: windows-2025-vs2026
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Integrate vcpkg
         run: vcpkg integrate install
@@ -48,7 +48,7 @@ jobs:
           sarif_file: sarif-results/cpp.sarif
 
       - name: Upload debug artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: DebugBuild
           path: x64\Debug
