@@ -15,76 +15,60 @@ on:
           - major
 
 jobs:
-    bump_version:
-        name: Bump Version
-        runs-on: ubuntu-latest
-        permissions: write-all
-        outputs:
-          current_version: ${{ steps.get_version.outputs.current_version || steps.bump.outputs.current_version || steps.bump_manual.outputs.current_version }}
-          new_version: ${{ steps.bump.outputs.new_version || steps.bump_manual.outputs.new_version }}
-        steps:
-            - uses: actions/checkout@v4
-            - uses: fregante/setup-git-user@v2
-            
-            - name: Install bump-my-version
-              run: pip install bump-my-version
+  version:
+    name: Bump Version
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.bump.outputs.version }}
+      ref: ${{ steps.bump.outputs.ref }}
+    steps:
+      - uses: actions/checkout@v7
 
-            - name: Get current version
-              id: get_version
-              if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.version_type == 'rebuild' }}
-              run: echo "current_version=$(bump-my-version show current_version)" >> $GITHUB_OUTPUT
+      - id: bump
+        uses: GrzybDev/actions/bump-version@v1
+        with:
+          bump: ${{ inputs.version_type }}
 
-            - name: Bump version
-              id: bump
-              if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.version_type != 'rebuild' }}
-              run: |
-                echo "current_version=$(bump-my-version show current_version)" >> $GITHUB_OUTPUT
-                bump-my-version bump ${{ inputs.version_type }}
-                ([[ $? -gt 0 ]] && echo "bumped=false" || echo "bumped=true") >> $GITHUB_OUTPUT
-                echo "new_version=$(bump-my-version show current_version)" >> $GITHUB_OUTPUT
+  build:
+    name: Build
+    needs: version
+    runs-on: windows-2025-vs2026
+    permissions:
+      contents: write
+    # The signing machine never signs a file uploaded longer ago, so the two change together.
+    timeout-minutes: 150
 
-            - name: Bump version (Manual)
-              id: bump_manual
-              if: ${{ github.event_name == 'release' }}
-              run: |
-                echo "current_version=$(bump-my-version show current_version)" >> $GITHUB_OUTPUT
-                bump-my-version bump --new-version ${{ github.ref_name }}
-                ([[ $? -gt 0 ]] && echo "bumped=false" || echo "bumped=true") >> $GITHUB_OUTPUT
-                echo "new_version=$(bump-my-version show current_version)" >> $GITHUB_OUTPUT
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.version.outputs.ref }}
 
-            - name: Push changes to GitHub
-              uses: ad-m/github-push-action@master
-              with:
-                force: true
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v3
 
-    build:
-        name: Build
-        permissions: write-all
-        needs: bump_version
-        runs-on: windows-2025-vs2026
+      - name: Integrate vcpkg
+        run: vcpkg integrate install
 
-        steps:
-          - uses: actions/checkout@v4
-            if: ${{ github.event_name == 'release' || github.event.inputs.version_type == 'rebuild' }}
+      - name: Build
+        run: msbuild ${{ github.event.repository.name }}.sln -property:Configuration=Release
 
-          - uses: actions/checkout@v4
-            if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.version_type != 'rebuild' }}
-            with:
-              ref: v${{ needs.bump_version.outputs.new_version }}
+      - name: Sign the library
+        uses: GrzybDev/actions/codesign@v1
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+          AWS_ENDPOINT_URL: ${{ secrets.AWS_ENDPOINT_URL }}
+        with:
+          files: x64/Release/loc_x64_f.dll
+          version: ${{ needs.version.outputs.version }}
+          store: ${{ vars.SIGNING_STORE || 's3://codesign' }}
+          subject: ${{ vars.SIGNING_SUBJECT }}
 
-          - name: Add msbuild to PATH
-            uses: microsoft/setup-msbuild@v2
-
-          - name: Integrate vcpkg
-            run: vcpkg integrate install
-
-          - name: Build
-            run: msbuild ${{ github.event.repository.name }}.sln -property:Configuration=Release
-
-          - name: Upload windows release for code signing
-            env:
-              AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-              AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-              AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-              AWS_ENDPOINT_URL: ${{ secrets.AWS_ENDPOINT_URL }}
-            run: aws s3 cp ./x64/Release/loc_x64_f.dll s3://builds/unsigned/${{ github.event.repository.name }}/v${{ needs.bump_version.outputs.new_version || needs.bump_version.outputs.current_version }}/loc_x64_f.dll
+      - name: Attach the library to the release
+        uses: softprops/action-gh-release@v3
+        with:
+          files: x64/Release/loc_x64_f.dll
+          tag_name: v${{ needs.version.outputs.version }}
