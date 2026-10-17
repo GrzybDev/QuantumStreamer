@@ -174,13 +174,14 @@ namespace qs
 			const std::string id = std::format("p{}", paragraphId++);
 			const std::string text = filter(cue.text);
 
-			Poco::AutoPtr<Poco::XML::Element> paragraph = document->createElement("p");
-			paragraph->setAttribute("xml:id", id);
+			// Without namespaces the writer binds the reserved xml prefix to TTML, which strict parsers reject.
+			Poco::AutoPtr<Poco::XML::Element> paragraph = document->createElementNS(body->namespaceURI(), "p");
+			paragraph->setAttributeNS(Poco::XML::NamespaceSupport::XML_NAMESPACE, "xml:id", id);
 			paragraph->setAttribute("begin", formatClockTime(std::max(0.0, cue.begin - fragmentStart)));
 			paragraph->setAttribute("end", formatClockTime(cue.end - fragmentStart));
 			paragraph->setAttribute("region", "speaker");
 
-			Poco::AutoPtr<Poco::XML::Element> span = document->createElement("span");
+			Poco::AutoPtr<Poco::XML::Element> span = document->createElementNS(body->namespaceURI(), "span");
 			span->setAttribute("style", "textStyle");
 
 			Poco::AutoPtr<Poco::XML::Text> textNode = document->createTextNode(text);

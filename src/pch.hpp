@@ -50,6 +50,7 @@
 #include <Poco/DOM/Element.h>
 #include <Poco/DOM/NodeList.h>
 #include <Poco/DOM/Text.h>
+#include <Poco/SAX/NamespaceSupport.h>
 #include <Poco/JSON/Object.h>
 #include <Poco/JSON/Parser.h>
 #include <Poco/Net/HTTPClientSession.h>

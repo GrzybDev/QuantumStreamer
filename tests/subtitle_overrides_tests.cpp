@@ -6,7 +6,7 @@
 #include <Poco/DOM/Document.h>
 #include <Poco/DOM/Element.h>
 #include <Poco/DOM/NodeList.h>
-#include <Poco/SAX/XMLReader.h>
+#include <Poco/SAX/NamespaceSupport.h>
 
 #include "subtitles/subtitle_overrides.hpp"
 #include "support.hpp"
@@ -32,10 +32,10 @@ namespace qs::test
 			bool operator==(const Paragraph&) const = default;
 		};
 
+		// Parsing with namespaces on also proves the document is namespace-well-formed.
 		std::vector<Paragraph> paragraphs(const std::string& ttml)
 		{
 			Poco::XML::DOMParser parser;
-			parser.setFeature(Poco::XML::XMLReader::FEATURE_NAMESPACES, false);
 			const Poco::AutoPtr<Poco::XML::Document> document = parser.parseString(ttml);
 			const Poco::AutoPtr<Poco::XML::NodeList> nodes = document->getElementsByTagName("p");
 
@@ -43,8 +43,8 @@ namespace qs::test
 			for (unsigned long i = 0; i < nodes->length(); ++i)
 			{
 				const auto* p = static_cast<Poco::XML::Element*>(nodes->item(i));
-				result.push_back({p->getAttribute("xml:id"), p->getAttribute("begin"), p->getAttribute("end"),
-				                  p->innerText()});
+				result.push_back({p->getAttributeNS(Poco::XML::NamespaceSupport::XML_NAMESPACE, "id"),
+				                  p->getAttribute("begin"), p->getAttribute("end"), p->innerText()});
 			}
 			return result;
 		}
