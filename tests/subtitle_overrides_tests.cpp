@@ -1,4 +1,12 @@
+#include <vector>
+
 #include <gtest/gtest.h>
+#include <Poco/AutoPtr.h>
+#include <Poco/DOM/DOMParser.h>
+#include <Poco/DOM/Document.h>
+#include <Poco/DOM/Element.h>
+#include <Poco/DOM/NodeList.h>
+#include <Poco/SAX/XMLReader.h>
 
 #include "subtitles/subtitle_overrides.hpp"
 #include "support.hpp"
@@ -13,6 +21,33 @@ namespace qs::test
 			R"(<?xml version="1.0" encoding="UTF-8"?><tt xml:lang="eng" xmlns="http://www.w3.org/ns/ttml"><head/>)"
 			R"(<body><div><p xml:id="s1" begin="00:00:00.000" end="00:00:01.000" region="speaker">)"
 			R"(<span style="textStyle">ORIGINAL</span></p></div></body></tt>)";
+
+		struct Paragraph
+		{
+			std::string id;
+			std::string begin;
+			std::string end;
+			std::string text;
+
+			bool operator==(const Paragraph&) const = default;
+		};
+
+		std::vector<Paragraph> paragraphs(const std::string& ttml)
+		{
+			Poco::XML::DOMParser parser;
+			parser.setFeature(Poco::XML::XMLReader::FEATURE_NAMESPACES, false);
+			const Poco::AutoPtr<Poco::XML::Document> document = parser.parseString(ttml);
+			const Poco::AutoPtr<Poco::XML::NodeList> nodes = document->getElementsByTagName("p");
+
+			std::vector<Paragraph> result;
+			for (unsigned long i = 0; i < nodes->length(); ++i)
+			{
+				const auto* p = static_cast<Poco::XML::Element*>(nodes->item(i));
+				result.push_back({p->getAttribute("xml:id"), p->getAttribute("begin"), p->getAttribute("end"),
+				                  p->innerText()});
+			}
+			return result;
+		}
 	}
 
 	class SubtitleOverridesTest : public testing::Test
@@ -35,6 +70,26 @@ namespace qs::test
 
 		TempFolder folder_;
 	};
+
+	TEST_F(SubtitleOverridesTest, ReplacesAFragmentsCaptionsWithTheCuesOverlappingIt)
+	{
+		const SubtitleOverrides overrides = load({.closedCaptioning = true, .musicNotes = true});
+
+		// The fragment's own paragraphs end within a second, so the 2.5 s minimum window applies.
+		EXPECT_EQ(paragraphs(overrides.apply("E1", "enus_captions", kTenSeconds, kFragment)),
+		          (std::vector<Paragraph>{
+			          {"p1", "00:00:00.500", "00:00:02.000", "- [ door slams ] Who is there? [ gasps ]"},
+			          {"p2", "00:00:02.200", "00:00:04.000", "\xE2\x99\xAA\xE2\x99\xAA Humming"},
+			          }));
+	}
+
+	TEST_F(SubtitleOverridesTest, KeepsReadingCuesAfterOneWithBrokenTiming)
+	{
+		const SubtitleOverrides overrides = load({.closedCaptioning = true, .musicNotes = true});
+
+		EXPECT_EQ(paragraphs(overrides.apply("E1", "enus_captions", 3 * kTenSeconds, kFragment)),
+		          (std::vector<Paragraph>{{"p1", "00:00:00.000", "00:00:01.000", "First line\nSecond line"}}));
+	}
 
 	TEST_F(SubtitleOverridesTest, LeavesTracksWithoutAnOverrideUntouched)
 	{

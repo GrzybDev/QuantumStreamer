@@ -160,8 +160,9 @@ namespace qs
 			originals.push_back(paragraph);
 		}
 
+		// removeChild hands the node to the document's autorelease pool, so releasing it here would free it twice.
 		for (Poco::XML::Node* paragraph : originals)
-			paragraph->parentNode()->removeChild(paragraph)->release();
+			paragraph->parentNode()->removeChild(paragraph);
 
 		const double fragmentStart = static_cast<double>(startTime) / kTicksPerSecond;
 		int paragraphId = 1;
