@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <filesystem>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -8,6 +9,30 @@
 
 namespace qs::test
 {
+	/// A folder under the system temp folder that is removed with everything in it.
+	class TempFolder
+	{
+	public:
+		TempFolder();
+		~TempFolder();
+		TempFolder(const TempFolder&) = delete;
+		TempFolder& operator=(const TempFolder&) = delete;
+
+		[[nodiscard]] const std::filesystem::path& path() const;
+
+		/// Writes a file byte for byte, creating its folders.
+		/// @param relative The file's path inside the folder.
+		/// @param content The bytes to write.
+		void write(const std::filesystem::path& relative, std::string_view content) const;
+
+		/// Reads a file byte for byte.
+		/// @param relative The file's path inside the folder.
+		[[nodiscard]] std::string read(const std::filesystem::path& relative) const;
+
+	private:
+		std::filesystem::path path_;
+	};
+
 	/// Builds an MP4 box.
 	/// @param type The four-character box type.
 	/// @param body Everything after the box header.
@@ -29,4 +54,8 @@ namespace qs::test
 	/// @param numberSizes The tfra field giving the sizes of the traf, trun and sample numbers.
 	std::string trackFile(const std::vector<std::pair<std::uint64_t, std::string>>& fragments, int version = 1,
 	                      std::uint32_t numberSizes = 0);
+
+	/// Encrypts a JSON video list the way the game stores it.
+	/// @param json The list's JSON text.
+	std::string encryptedVideoList(std::string json);
 }

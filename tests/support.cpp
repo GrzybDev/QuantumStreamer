@@ -1,7 +1,44 @@
 #include "support.hpp"
 
+#include <format>
+#include <fstream>
+#include <iterator>
+#include <random>
+
+#include "catalog/video_list.hpp"
+
 namespace qs::test
 {
+	TempFolder::TempFolder() :
+		path_(std::filesystem::temp_directory_path() / std::format("QuantumStreamerTests-{}", std::random_device{}()))
+	{
+		std::filesystem::create_directories(path_);
+	}
+
+	TempFolder::~TempFolder()
+	{
+		std::error_code ignored;
+		std::filesystem::remove_all(path_, ignored);
+	}
+
+	const std::filesystem::path& TempFolder::path() const
+	{
+		return path_;
+	}
+
+	void TempFolder::write(const std::filesystem::path& relative, const std::string_view content) const
+	{
+		const std::filesystem::path file = path_ / relative;
+		std::filesystem::create_directories(file.parent_path());
+		std::ofstream(file, std::ios::binary).write(content.data(), static_cast<std::streamsize>(content.size()));
+	}
+
+	std::string TempFolder::read(const std::filesystem::path& relative) const
+	{
+		std::ifstream stream(path_ / relative, std::ios::binary);
+		return {std::istreambuf_iterator<char>(stream), {}};
+	}
+
 	std::string bigEndian(const std::uint64_t value, const std::size_t size)
 	{
 		std::string bytes;
@@ -45,5 +82,11 @@ namespace qs::test
 		                             + bigEndian(numberSizes) + bigEndian(fragments.size()) + entries);
 		const std::size_t mfraSize = 8 + tfra.size() + 16;
 		return file + box("mfra", tfra + box("mfro", bigEndian(0) + bigEndian(mfraSize)));
+	}
+
+	std::string encryptedVideoList(std::string json)
+	{
+		applyRmdjCipher(json);
+		return json;
 	}
 }

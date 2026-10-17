@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{ca6a3ec0-42e8-57a1-8b69-6bf360bd16be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\app">
+      <UniqueIdentifier>{655e7d9b-796e-5626-9383-2c72b694457f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\catalog">
+      <UniqueIdentifier>{ede1d1ae-8819-557a-a141-f88311aeeb43}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\media">
+      <UniqueIdentifier>{0eb4e0b6-894c-50e2-80aa-3a5658e0ce48}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\offline">
+      <UniqueIdentifier>{4fbe3862-8a76-5258-9944-b4b9efe87108}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\server">
+      <UniqueIdentifier>{e6f22d6d-189a-55d9-adb3-f092297db1d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\subtitles">
+      <UniqueIdentifier>{a827b4ee-1d9d-5361-8771-818a33f5fb59}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\util">
+      <UniqueIdentifier>{3b9ce6f8-c78d-5373-88d0-aac9477de05b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\app\logging.hpp">
+      <Filter>src\app</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\quantum_streamer.hpp">
+      <Filter>src\app</Filter>
+    </ClInclude>
+    <ClInclude Include="src\app\settings.hpp">
+      <Filter>src\app</Filter>
+    </ClInclude>
+    <ClInclude Include="src\catalog\video_list.hpp">
+      <Filter>src\catalog</Filter>
+    </ClInclude>
+    <ClInclude Include="src\media\mp4.hpp">
+      <Filter>src\media</Filter>
+    </ClInclude>
+    <ClInclude Include="src\offline\offline_library.hpp">
+      <Filter>src\offline</Filter>
+    </ClInclude>
+    <ClInclude Include="src\pch.hpp">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\server\content_sources.hpp">
+      <Filter>src\server</Filter>
+    </ClInclude>
+    <ClInclude Include="src\server\handler_factory.hpp">
+      <Filter>src\server</Filter>
+    </ClInclude>
+    <ClInclude Include="src\server\handlers.hpp">
+      <Filter>src\server</Filter>
+    </ClInclude>
+    <ClInclude Include="src\subtitles\subtitle_overrides.hpp">
+      <Filter>src\subtitles</Filter>
+    </ClInclude>
+    <ClInclude Include="src\util\files.hpp">
+      <Filter>src\util</Filter>
+    </ClInclude>
+    <ClInclude Include="src\version.hpp">
+      <Filter>src</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\app\logging.cpp">
+      <Filter>src\app</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\quantum_streamer.cpp">
+      <Filter>src\app</Filter>
+    </ClCompile>
+    <ClCompile Include="src\app\settings.cpp">
+      <Filter>src\app</Filter>
+    </ClCompile>
+    <ClCompile Include="src\catalog\video_list.cpp">
+      <Filter>src\catalog</Filter>
+    </ClCompile>
+    <ClCompile Include="src\media\mp4.cpp">
+      <Filter>src\media</Filter>
+    </ClCompile>
+    <ClCompile Include="src\offline\offline_library.cpp">
+      <Filter>src\offline</Filter>
+    </ClCompile>
+    <ClCompile Include="src\server\content_sources.cpp">
+      <Filter>src\server</Filter>
+    </ClCompile>
+    <ClCompile Include="src\server\handler_factory.cpp">
+      <Filter>src\server</Filter>
+    </ClCompile>
+    <ClCompile Include="src\server\handlers.cpp">
+      <Filter>src\server</Filter>
+    </ClCompile>
+    <ClCompile Include="src\subtitles\subtitle_overrides.cpp">
+      <Filter>src\subtitles</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pch.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

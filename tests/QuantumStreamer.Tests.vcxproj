@@ -47,7 +47,10 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mp4_tests.cpp" />
+    <ClCompile Include="server_tests.cpp" />
+    <ClCompile Include="subtitle_overrides_tests.cpp" />
     <ClCompile Include="support.cpp" />
+    <ClCompile Include="video_list_tests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\QuantumStreamer.Core.vcxproj">
