@@ -84,6 +84,9 @@ namespace qs
 		}
 
 		VideoList original = load(originalPath);
+		// An empty list would leave the game without episodes, so the game's file is only replaced by a real one.
+		if (original.manifestUrls_.empty())
+			return original;
 
 		Poco::JSON::Object patched;
 		for (const std::string& episodeId : original.manifestUrls_ | std::views::keys)

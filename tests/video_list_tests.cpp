@@ -69,4 +69,13 @@ namespace qs::test
 		          "http://cdn.example/E2.ism/QualityLevels(256000)/Fragments(enus_captions=20020000)?token=2");
 		EXPECT_FALSE(list.fragmentUrl("E3", "256000", "enus", "0").has_value());
 	}
+
+	TEST_F(VideoListTest, LeavesTheGameListAloneWhenTheCopyIsUnreadable)
+	{
+		folder_.write(kGameFile, kStoreList);
+		folder_.write(kOriginalFile, "not a video list");
+
+		EXPECT_TRUE(VideoList::patchGameFile(kOriginalPath, 1234).episodeIds().empty());
+		EXPECT_EQ(folder_.read(kGameFile), kStoreList);
+	}
 }
