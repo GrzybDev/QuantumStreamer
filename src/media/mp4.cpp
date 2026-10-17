@@ -51,10 +51,59 @@ namespace qs::mp4
 				return size;
 			}
 
+			[[nodiscard]] std::size_t position() const
+			{
+				return position_;
+			}
+
 		private:
 			std::string_view data_;
 			std::size_t position_ = 0;
 		};
+
+		std::array<char, 4> bigEndian(const std::uint32_t value)
+		{
+			return {static_cast<char>(value >> 24), static_cast<char>(value >> 16), static_cast<char>(value >> 8),
+			        static_cast<char>(value)};
+		}
+
+		// Finds where the trun box of a single-sample fragment repeats the size of its sample.
+		std::optional<std::size_t> findSampleSizeOffset(const std::string_view fragment)
+		{
+			constexpr std::uint64_t kDataOffsetPresent = 0x1;
+			constexpr std::uint64_t kFirstSampleFlagsPresent = 0x4;
+			constexpr std::uint64_t kSampleDurationPresent = 0x100;
+			constexpr std::uint64_t kSampleSizePresent = 0x200;
+
+			ByteReader reader(fragment);
+			const std::uint64_t moofEnd = reader.expectBox("moof");
+			while (reader.position() < moofEnd)
+			{
+				const std::uint64_t size = reader.readUInt(kSizeFieldSize);
+				const std::string_view type = reader.take(4);
+				if (size < kHeaderSize)
+					throw FormatError("A box in the moof box is too small");
+
+				// The traf box only holds other boxes, so the walk goes on with its first child.
+				if (type == "traf")
+					continue;
+				if (type != "trun")
+				{
+					reader.skip(size - kHeaderSize);
+					continue;
+				}
+
+				const std::uint64_t flags = reader.readUInt(4) & 0xFFFFFF;
+				if (reader.readUInt(4) != 1 || !(flags & kSampleSizePresent))
+					return std::nullopt;
+
+				reader.skip((flags & kDataOffsetPresent ? 4 : 0) + (flags & kFirstSampleFlagsPresent ? 4 : 0)
+					+ (flags & kSampleDurationPresent ? 4 : 0));
+				return reader.position();
+			}
+
+			return std::nullopt;
+		}
 
 		void appendExactly(std::istream& file, const std::uint64_t size, std::string& out)
 		{
@@ -153,11 +202,13 @@ namespace qs::mp4
 
 	std::string joinFragment(const std::string_view moof, const std::string_view payload)
 	{
-		const auto mdatSize = static_cast<std::uint32_t>(kHeaderSize + payload.size());
+		const auto payloadSize = static_cast<std::uint32_t>(payload.size());
 
 		std::string fragment(moof);
-		for (int shift = 24; shift >= 0; shift -= 8)
-			fragment += static_cast<char>(mdatSize >> shift & 0xFF);
+		if (const std::optional<std::size_t> offset = findSampleSizeOffset(fragment))
+			fragment.replace(*offset, 4, bigEndian(payloadSize).data(), 4);
+
+		fragment.append(bigEndian(static_cast<std::uint32_t>(payloadSize + kHeaderSize)).data(), 4);
 		fragment += "mdat";
 		fragment += payload;
 		return fragment;

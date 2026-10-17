@@ -39,7 +39,7 @@ namespace qs::mp4
 	/// @param fragment The fragment, which must outlive the returned views.
 	FragmentParts splitFragment(std::string_view fragment);
 
-	/// Builds a moof + mdat fragment.
+	/// Builds a moof + mdat fragment, updating the sample size a single-sample trun box repeats.
 	/// @param moof The fragment's moof box.
 	/// @param payload The content of the mdat box.
 	std::string joinFragment(std::string_view moof, std::string_view payload);

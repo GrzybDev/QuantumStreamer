@@ -66,4 +66,21 @@ namespace qs::test
 
 		EXPECT_THROW((void)mp4::readFragment(file, 0), mp4::FormatError);
 	}
+
+	TEST(Mp4, KeepsASingleSampleSizeInStepWithANewPayload)
+	{
+		const std::string original = fragment("<tt>short</tt>");
+		const auto [moof, payload] = mp4::splitFragment(original);
+		EXPECT_EQ(payload, "<tt>short</tt>");
+
+		EXPECT_EQ(mp4::joinFragment(moof, "<tt>a longer caption</tt>"), fragment("<tt>a longer caption</tt>"));
+	}
+
+	TEST(Mp4, LeavesTheSampleSizesOfSeveralSamplesAlone)
+	{
+		const std::string original = fragment("twosamples", 2);
+		const auto [moof, payload] = mp4::splitFragment(original);
+
+		EXPECT_EQ(mp4::joinFragment(moof, "longer payload").substr(0, moof.size()), moof);
+	}
 }
