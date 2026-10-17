@@ -40,16 +40,16 @@ Features
 
 - Offline playback (see [QuantumFetcher](https://github.com/GrzybDev/QuantumFetcher.git))
 - Subtitles override support (you can translate/edit subtitles in episodes, please use [QuantumFetcher](https://github.com/GrzybDev/QuantumFetcher.git) to get the original subtitles)
-- Dynamically add/remove closed captions
-- Dynamically add/remove music notes in captions
+- Optionally remove closed-caption annotations and music notes from overridden captions
 
 Build Requirements
 ------------------
 
-- Visual Studio 2022
+- Visual Studio 2026
 
-### Libraries:
+### Libraries (installed by vcpkg):
 - Poco
+- GoogleTest (unit tests)
 
 Compiling
 ---------
@@ -57,26 +57,28 @@ Compiling
 See one of [build workflows](https://github.com/GrzybDev/QuantumStreamer/blob/main/.github/workflows) for more detailed steps
 
 1. [Integrate vcpkg with Visual Studio](https://learn.microsoft.com/vcpkg/commands/integrate)
-2. Build project in Visual Studio (It has to be x64 Release build, it's the only one configuration setup, but please check before doing that)
+2. Build the solution in Visual Studio (x64 Release for the hook)
+3. Run `x64\Release\QuantumStreamer.Tests.exe` to run the unit tests
 
 Installing
 ----------
 
-- Rename original `loc_x64_f.dll` to `loc_x64_f_o.dll`
-- Copy `loc_x64_f.dll` file from either the latest build in [GitHub Releases](https://github.com/GrzybDev/QuantumStreamer/releases) or from `Release` folder if you compiled it yourself
+- In the game's `dx11` folder, rename the original `loc_x64_f.dll` to `loc_x64_f_o.dll`
+- Copy `loc_x64_f.dll` there, either from the latest build in [GitHub Releases](https://github.com/GrzybDev/QuantumStreamer/releases) or from `x64\Release` if you compiled it yourself
 
 Configuration
 -------------
 
-You can change the default behavior of the hook by creating config in supported format where the game .exe is
+You can change the default behavior of the hook by creating a config file named after the game executable, `QuantumBreak`, next to it (in the `dx11` folder) or in the game folder.
 
 The following formats are supported:
 
-- .properties - properties file (in order to use it, create `QuantumBreak.properties` where the game executable is)
-- .ini - initialization file (in order to use it, create `QuantumBreak.ini` where the game executable is)
-- .xml - XML file (in order to use it, create `QuantumBreak.xml` where the game executable is)
+- `QuantumBreak.properties` - properties file
+- `QuantumBreak.ini` - initialization file
+- `QuantumBreak.json` - JSON file
+- `QuantumBreak.xml` - XML file
 
-In the config, you can set following values (dot seperates section and key)
+In the config, you can set following values (dot separates section and key). Relative paths start from the game folder.
 
 
 | Key                               | Description                                                                                   | Allowed Values                                                                    | Default Value                    |
@@ -93,19 +95,19 @@ In the config, you can set following values (dot seperates section and key)
 | Server.MaxQueued                  | Max queued HTTP requests                                                                      | Integer                                                                           | 100                              |
 | Server.MaxThreads                 | Max threads (HTTP server)                                                                     | Integer                                                                           | Logical CPU count or 2 if failed |
 | Server.OfflineMode                | Disable online streaming, episodes stored locally will continue to work                       | Boolean                                                                           | false                            |
-| Server.Port                       | Port for HTTP server (game also have to point to this port), if 0 will use random unused port | Unsigned short                                                                    | 0                                |
+| Server.Port                       | Port for HTTP server (game has to point to this port), if 0 will use random unused port       | Unsigned short                                                                    | 0                                |
 | Server.VideoListPath              | Path to original, unmodified `./data/videoList.rmdj` file                                     | String                                                                            | `./data/videoList_original.rmdj` |
-| Subtitles.ClosedCaptioning        | Show closed captions in subtitles                                                             | Boolean                                                                           | false                            |
-| Subtitles.MusicNotes              | Show music notes in subtitles                                                                 | Boolean                                                                           | true                             |
+| Subtitles.ClosedCaptioning        | Keep closed-caption annotations such as `[ door slams ]` in overridden captions               | Boolean                                                                           | false                            |
+| Subtitles.MusicNotes              | Keep `♪♪` music notes in overridden captions                                                  | Boolean                                                                           | true                             |
 | VideoList.PatchFile               | Patch `./data/videoList.rmdj` to point to server on startup                                   | Boolean                                                                           | true                             |
 
 The default config should work for most of the users, but if you have special requirements you can change above settings.
 
-Example config that will disable online streaming and enables Closed Captioning:
+Example config that disables online streaming and keeps closed-caption annotations:
 
 ```
 [Server]
-OfflineMode=false
+OfflineMode=true
 
 [Subtitles]
 ClosedCaptioning=true
@@ -118,14 +120,15 @@ Initially, after installing the hook, with default config - nothing should chang
 Quantum Streamer on game launch will try to load `Server.VideoListPath`, after that hook will scan `Server.EpisodesPath` directory for the locally stored episodes and/or captions_overrides.
 
 VideoList loaded by game (`data/videoList.rmdj`) has to point to the Quantum Streamer server, by default Quantum Streamer will patch this file, but you can disable this behaviour by setting `VideoList.PatchFile` to false, but then, you have to patch that file manually - for that, you can use [QuantumFetcher](https://github.com/GrzybDev/QuantumFetcher.git) tool.
+Before the first patch, the hook keeps the game's own list as `Server.VideoListPath`. A kept copy that already points at Quantum Streamer is removed, since it no longer holds the episodes' addresses; verify the game files in Steam to restore the original list.
 
 Each episode data is expected to be in dedicated episode directory (e.g. `./videos/episodes/J1A-X1-X2` is where hook will look for episode `J1A-X1-X2` (assuming `Server.EpisodesPath` is not changed))
 Local episodes are expected to be in ISM Smooth Stream format:
 
 `*.ism` (Server Manifest) should at least define `clientManifestRelativePath` in `head` section which should reference filename/relative path for client manifest file.
-All media files referenced in the Server Manifest will be loaded (if media file exist)
+All media files referenced in the Server Manifest will be loaded (if media file exist); each has to end with an `mfra` fragment index, as [QuantumFetcher](https://github.com/GrzybDev/QuantumFetcher.git) writes them.
 
-Additionally, SubRip (`.srt`) files which contain `_captions` in their filename will be loaded, after that hook will replace captions in specific track (e.g. `enus_captions.srt` will override `enus_captions` track) with the ones from the file, allowing you to translate or edit captions in the live action.
+Additionally, SubRip (`.srt`) files which contain `_captions` in their filename will be loaded, after that hook will replace captions in specific track (e.g. `enus_captions.srt` will override `enus_captions` track) with the ones from the file, allowing you to translate or edit captions in the live action. The `.srt` files have to be saved as UTF-8.
 
 Credits
 -------
