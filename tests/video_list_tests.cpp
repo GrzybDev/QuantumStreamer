@@ -78,4 +78,14 @@ namespace qs::test
 		EXPECT_TRUE(VideoList::patchGameFile(kOriginalPath, 1234).episodeIds().empty());
 		EXPECT_EQ(folder_.read(kGameFile), kStoreList);
 	}
+
+	TEST_F(VideoListTest, DiscardsACopyThatAlreadyPointsAtTheLocalServer)
+	{
+		folder_.write(kGameFile, kStoreList);
+		folder_.write(kOriginalFile, encryptedVideoList(R"({"E1": "http://127.0.0.1:999/E1/manifest"})"));
+
+		EXPECT_TRUE(VideoList::patchGameFile(kOriginalPath, 1234).episodeIds().empty());
+		EXPECT_FALSE(std::filesystem::exists(kOriginalFile));
+		EXPECT_EQ(folder_.read(kGameFile), kStoreList);
+	}
 }
