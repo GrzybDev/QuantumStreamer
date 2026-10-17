@@ -91,6 +91,17 @@ namespace qs::test
 		          (std::vector<Paragraph>{{"p1", "00:00:00.000", "00:00:01.000", "First line\nSecond line"}}));
 	}
 
+	TEST_F(SubtitleOverridesTest, DropsAnnotationsButKeepsTheDialogueBetweenThem)
+	{
+		const SubtitleOverrides overrides = load({.closedCaptioning = false, .musicNotes = false});
+
+		const std::vector<Paragraph> result = paragraphs(overrides.apply("E1", "enus_captions", kTenSeconds, kFragment));
+
+		ASSERT_EQ(result.size(), 2u);
+		EXPECT_EQ(result[0].text, " Who is there?");
+		EXPECT_EQ(result[1].text, " Humming");
+	}
+
 	TEST_F(SubtitleOverridesTest, LeavesTracksWithoutAnOverrideUntouched)
 	{
 		const SubtitleOverrides overrides = load({});

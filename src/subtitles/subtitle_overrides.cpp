@@ -216,7 +216,7 @@ namespace qs
 	{
 		if (!options_.closedCaptioning)
 		{
-			static const std::regex annotation(R"([ -]*\[ .* \])");
+			static const std::regex annotation(R"([ -]*\[ .*? \])");
 			text = std::regex_replace(text, annotation, "");
 		}
 
