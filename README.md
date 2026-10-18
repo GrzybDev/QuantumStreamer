@@ -57,7 +57,7 @@ Compiling
 See one of [build workflows](https://github.com/GrzybDev/QuantumStreamer/blob/main/.github/workflows) for more detailed steps
 
 1. [Integrate vcpkg with Visual Studio](https://learn.microsoft.com/vcpkg/commands/integrate)
-2. Build the solution in Visual Studio (x64 Release for the hook)
+2. Build the solution `QuantumStreamer.slnx` in Visual Studio (x64 Release for the hook)
 3. Run `x64\Release\QuantumStreamer.Tests.exe` to run the unit tests
 
 Installing

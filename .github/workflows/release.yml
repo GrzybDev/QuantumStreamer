@@ -1,0 +1,54 @@
+name: Release Build
+
+on:
+  release:
+    types: [published]
+
+  workflow_dispatch:
+    inputs:
+      version_type:
+        type: choice
+        description: 'Version Type'
+        required: true
+        default: rebuild
+        options:
+          - rebuild
+          - patch
+          - minor
+          - major
+
+jobs:
+  checks:
+    permissions:
+      contents: read
+      security-events: write
+    uses: GrzybDev/actions/.github/workflows/cpp-checks.yml@v1
+
+  version:
+    name: Bump Version
+    needs: checks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.bump.outputs.version }}
+      ref: ${{ steps.bump.outputs.ref }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - id: bump
+        uses: GrzybDev/actions/bump-version@v1
+        with:
+          bump: ${{ inputs.version_type }}
+          version: ${{ github.event_name == 'release' && github.ref_name || '' }}
+
+  build:
+    needs: version
+    permissions:
+      contents: write
+    uses: GrzybDev/actions/.github/workflows/cpp-dll.yml@v1
+    secrets: inherit
+    with:
+      version: ${{ needs.version.outputs.version }}
+      ref: ${{ needs.version.outputs.ref }}
+      library: loc_x64_f.dll

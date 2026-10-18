@@ -1,0 +1,8 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+  </Configurations>
+  <Project Path="QuantumStreamer.vcxproj" Id="0f79cfe6-e48b-4d95-af5f-6ce41b4e93a3" />
+  <Project Path="QuantumStreamer.Core.vcxproj" Id="6d1f5c39-8f0e-4b8e-9c55-2f1a6b0c7e41" />
+  <Project Path="tests/QuantumStreamer.Tests.vcxproj" Id="3b8a2e5d-1c47-4f2a-b6d9-8e0c5a7f9d12" />
+</Solution>
