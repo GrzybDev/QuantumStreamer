@@ -5,9 +5,16 @@ namespace qs
 {
 	namespace
 	{
+		// The console belongs to the game's process, so Ctrl+C or Ctrl+Break in it would otherwise end the game.
+		BOOL WINAPI ignoreInterrupts(const DWORD event)
+		{
+			return event == CTRL_C_EVENT || event == CTRL_BREAK_EVENT;
+		}
+
 		void attachConsole()
 		{
 			AllocConsole();
+			SetConsoleCtrlHandler(ignoreInterrupts, TRUE);
 
 			FILE* stream = nullptr;
 			freopen_s(&stream, "CONOUT$", "w", stdout);
