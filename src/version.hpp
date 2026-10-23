@@ -4,5 +4,5 @@
 
 namespace qs
 {
-	inline constexpr std::string_view kVersion = "1.2.1";
+	inline constexpr std::string_view kVersion = "1.2.2";
 }
