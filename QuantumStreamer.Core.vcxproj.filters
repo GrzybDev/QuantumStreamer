@@ -48,6 +48,9 @@
     <ClInclude Include="src\subtitles\subtitle_overrides.hpp">
       <Filter>src\subtitles</Filter>
     </ClInclude>
+    <ClInclude Include="src\util\errors.hpp">
+      <Filter>src\util</Filter>
+    </ClInclude>
     <ClInclude Include="src\util\files.hpp">
       <Filter>src\util</Filter>
     </ClInclude>

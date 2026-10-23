@@ -5,6 +5,7 @@
 #include "media/mp4.hpp"
 #include "offline/offline_library.hpp"
 #include "subtitles/subtitle_overrides.hpp"
+#include "util/errors.hpp"
 #include "util/log_channels.hpp"
 
 namespace qs
@@ -81,15 +82,10 @@ namespace qs
 			return mp4::joinFragment(
 				moof, services_.subtitles.apply(request_.episodeId, request_.track, *startTime_, ttml));
 		}
-		catch (const Poco::Exception& error)
+		catch (const std::exception& error)
 		{
 			Poco::Logger::get(channel::SubtitleOverride).warning(
-				std::format("Cannot override the captions of the {} ({})", describe(), error.displayText()));
-		}
-		catch (const mp4::FormatError& error)
-		{
-			Poco::Logger::get(channel::SubtitleOverride).warning(
-				std::format("Cannot override the captions of the {} ({})", describe(), error.what()));
+				std::format("Cannot override the captions of the {} ({})", describe(), errorText(error)));
 		}
 
 		return content;

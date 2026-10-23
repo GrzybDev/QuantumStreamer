@@ -51,6 +51,7 @@
     <ClInclude Include="src\server\handler_factory.hpp" />
     <ClInclude Include="src\server\handlers.hpp" />
     <ClInclude Include="src\subtitles\subtitle_overrides.hpp" />
+    <ClInclude Include="src\util\errors.hpp" />
     <ClInclude Include="src\util\files.hpp" />
     <ClInclude Include="src\util\log_channels.hpp" />
   </ItemGroup>

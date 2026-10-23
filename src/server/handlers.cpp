@@ -1,6 +1,7 @@
 #include "pch.hpp"
 #include "handlers.hpp"
 
+#include "util/errors.hpp"
 #include "util/log_channels.hpp"
 
 using Poco::Net::HTTPResponse;
@@ -51,9 +52,8 @@ namespace qs
 		}
 		catch (const std::exception& error)
 		{
-			const auto* pocoError = dynamic_cast<const Poco::Exception*>(&error);
 			logger().error(std::format("Failed to answer \"{} {}\" ({})", request.getMethod(), request.getURI(),
-			                           pocoError ? pocoError->displayText() : error.what()));
+			                           errorText(error)));
 
 			if (!response.sent())
 				sendStatus(response, HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);

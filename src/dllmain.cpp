@@ -1,6 +1,7 @@
 #include "pch.hpp"
 
 #include "app/quantum_streamer.hpp"
+#include "util/errors.hpp"
 #include "util/log_channels.hpp"
 
 namespace
@@ -13,13 +14,9 @@ namespace
 			application.init({"QuantumStreamer"});
 			return static_cast<DWORD>(application.run());
 		}
-		catch (const Poco::Exception& error)
-		{
-			Poco::Logger::get(qs::channel::Core).fatal(error.displayText());
-		}
 		catch (const std::exception& error)
 		{
-			Poco::Logger::get(qs::channel::Core).fatal(error.what());
+			Poco::Logger::get(qs::channel::Core).fatal(qs::errorText(error));
 		}
 
 		return EXIT_FAILURE;
