@@ -5,6 +5,13 @@
 #include <iterator>
 #include <random>
 
+#include <Poco/AutoPtr.h>
+#include <Poco/DOM/DOMParser.h>
+#include <Poco/DOM/Document.h>
+#include <Poco/DOM/Element.h>
+#include <Poco/DOM/NodeList.h>
+#include <Poco/SAX/NamespaceSupport.h>
+
 #include "catalog/video_list.hpp"
 
 namespace qs::test
@@ -82,6 +89,23 @@ namespace qs::test
 		                             + bigEndian(numberSizes) + bigEndian(fragments.size()) + entries);
 		const std::size_t mfraSize = 8 + tfra.size() + 16;
 		return file + box("mfra", tfra + box("mfro", bigEndian(0) + bigEndian(mfraSize)));
+	}
+
+	// Parsing with namespaces on also proves the document is namespace-well-formed.
+	std::vector<Paragraph> paragraphs(const std::string& ttml)
+	{
+		Poco::XML::DOMParser parser;
+		const Poco::AutoPtr<Poco::XML::Document> document = parser.parseString(ttml);
+		const Poco::AutoPtr<Poco::XML::NodeList> nodes = document->getElementsByTagName("p");
+
+		std::vector<Paragraph> result;
+		for (unsigned long i = 0; i < nodes->length(); ++i)
+		{
+			const auto* p = static_cast<Poco::XML::Element*>(nodes->item(i));
+			result.push_back({p->getAttributeNS(Poco::XML::NamespaceSupport::XML_NAMESPACE, "id"),
+			                  p->getAttribute("begin"), p->getAttribute("end"), p->innerText()});
+		}
+		return result;
 	}
 
 	std::string encryptedVideoList(std::string json)

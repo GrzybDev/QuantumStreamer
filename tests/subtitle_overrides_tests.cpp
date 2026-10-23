@@ -1,12 +1,6 @@
 #include <vector>
 
 #include <gtest/gtest.h>
-#include <Poco/AutoPtr.h>
-#include <Poco/DOM/DOMParser.h>
-#include <Poco/DOM/Document.h>
-#include <Poco/DOM/Element.h>
-#include <Poco/DOM/NodeList.h>
-#include <Poco/SAX/NamespaceSupport.h>
 
 #include "subtitles/subtitle_overrides.hpp"
 #include "support.hpp"
@@ -21,33 +15,6 @@ namespace qs::test
 			R"(<?xml version="1.0" encoding="UTF-8"?><tt xml:lang="eng" xmlns="http://www.w3.org/ns/ttml"><head/>)"
 			R"(<body><div><p xml:id="s1" begin="00:00:00.000" end="00:00:01.000" region="speaker">)"
 			R"(<span style="textStyle">ORIGINAL</span></p></div></body></tt>)";
-
-		struct Paragraph
-		{
-			std::string id;
-			std::string begin;
-			std::string end;
-			std::string text;
-
-			bool operator==(const Paragraph&) const = default;
-		};
-
-		// Parsing with namespaces on also proves the document is namespace-well-formed.
-		std::vector<Paragraph> paragraphs(const std::string& ttml)
-		{
-			Poco::XML::DOMParser parser;
-			const Poco::AutoPtr<Poco::XML::Document> document = parser.parseString(ttml);
-			const Poco::AutoPtr<Poco::XML::NodeList> nodes = document->getElementsByTagName("p");
-
-			std::vector<Paragraph> result;
-			for (unsigned long i = 0; i < nodes->length(); ++i)
-			{
-				const auto* p = static_cast<Poco::XML::Element*>(nodes->item(i));
-				result.push_back({p->getAttributeNS(Poco::XML::NamespaceSupport::XML_NAMESPACE, "id"),
-				                  p->getAttribute("begin"), p->getAttribute("end"), p->innerText()});
-			}
-			return result;
-		}
 	}
 
 	class SubtitleOverridesTest : public testing::Test

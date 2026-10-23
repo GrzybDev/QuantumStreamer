@@ -57,6 +57,21 @@ namespace qs::test
 	std::string trackFile(const std::vector<std::pair<std::uint64_t, std::string>>& fragments, int version = 1,
 	                      std::uint32_t numberSizes = 0);
 
+	/// One paragraph of a TTML caption document.
+	struct Paragraph
+	{
+		std::string id;
+		std::string begin;
+		std::string end;
+		std::string text;
+
+		bool operator==(const Paragraph&) const = default;
+	};
+
+	/// Reads the paragraphs of a TTML document, parsing it with namespaces on.
+	/// @param ttml The document to read.
+	std::vector<Paragraph> paragraphs(const std::string& ttml);
+
 	/// Encrypts a JSON video list the way the game stores it.
 	/// @param json The list's JSON text.
 	std::string encryptedVideoList(std::string json);

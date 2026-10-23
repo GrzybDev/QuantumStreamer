@@ -47,6 +47,7 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mp4_tests.cpp" />
+    <ClCompile Include="real_game_files_tests.cpp" />
     <ClCompile Include="server_tests.cpp" />
     <ClCompile Include="subtitle_overrides_tests.cpp" />
     <ClCompile Include="support.cpp" />
