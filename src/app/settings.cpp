@@ -14,15 +14,38 @@ namespace qs
 		}
 	}
 
+	Settings::Logging Settings::Logging::load(const Poco::Util::AbstractConfiguration& config)
+	{
+		Logging logging;
+
+		// Logging cannot report its own invalid values, so each keeps its default and is reported once logging runs.
+		const auto read = [&](const std::string& key, auto& value)
+		{
+			try
+			{
+				if constexpr (std::is_same_v<std::remove_reference_t<decltype(value)>, bool>)
+					value = config.getBool(key, value);
+				else
+					value = config.getInt(key, value);
+			}
+			catch (const Poco::Exception& error)
+			{
+				logging.invalidValues.push_back(std::format("{} ({})", key, error.displayText()));
+			}
+		};
+
+		read("Logger.ShowConsole", logging.showConsole);
+		read("Logger.SaveToLogFile", logging.saveToFile);
+		logging.file = config.getString("Logger.LogFile", logging.file);
+		for (const char* channel : channel::All)
+			read(std::format("Logger.LogLevel_{}", channel), logging.levels[channel] = Poco::Message::PRIO_INFORMATION);
+
+		return logging;
+	}
+
 	Settings Settings::load(const Poco::Util::AbstractConfiguration& config)
 	{
-		Settings settings{
-			.logging = {
-				.showConsole = config.getBool("Logger.ShowConsole", false),
-				.saveToFile = config.getBool("Logger.SaveToLogFile", false),
-				.file = config.getString("Logger.LogFile", "QuantumStreamer.log"),
-				.levels = {},
-			},
+		return {
 			.server = {
 				.port = config.getUInt16("Server.Port", 0),
 				.maxQueued = config.getInt("Server.MaxQueued", 100),
@@ -37,11 +60,5 @@ namespace qs
 			},
 			.patchVideoList = config.getBool("VideoList.PatchFile", true),
 		};
-
-		for (const char* channel : channel::All)
-			settings.logging.levels[channel] = config.getInt(std::format("Logger.LogLevel_{}", channel),
-			                                                 Poco::Message::PRIO_INFORMATION);
-
-		return settings;
 	}
 }

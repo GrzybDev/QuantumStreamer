@@ -15,15 +15,21 @@ namespace qs
 		// The base class points the application logger elsewhere, so the Core logger is set after it.
 		Application::initialize(self);
 
-		settings_ = Settings::load(config());
-		setupLogging(settings_.logging);
+		// Logging starts before the other settings are read, so an invalid value among them reaches the log.
+		const Settings::Logging logging = Settings::Logging::load(config());
+		setupLogging(logging);
 		setLogger(Poco::Logger::get(channel::Core));
+
+		for (const std::string& value : logging.invalidValues)
+			logger().error(std::format("Invalid setting {}, its default is used instead", value));
 
 		logger().notice(std::format("Quantum Streamer v{} by Marek Grzyb (@GrzybDev)", kVersion));
 		logger().notice("Homepage: https://grzyb.dev/app/QuantumStreamer");
 		logger().notice("Source code: https://github.com/GrzybDev/QuantumStreamer");
 		logger().notice("Noticed a bug? Fill a bug report here: https://github.com/GrzybDev/QuantumStreamer/issues");
 		logger().notice("Licensed under GNU Lesser General Public License v3, Contributions of any kind welcome!");
+
+		settings_ = Settings::load(config());
 	}
 
 	int QuantumStreamer::main(const std::vector<std::string>& /*args*/)
