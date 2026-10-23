@@ -13,11 +13,13 @@ namespace qs::test
 	class TempFolder
 	{
 	public:
+		/// Creates a new, empty folder with a random name.
 		TempFolder();
 		~TempFolder();
 		TempFolder(const TempFolder&) = delete;
 		TempFolder& operator=(const TempFolder&) = delete;
 
+		/// Returns the folder's full path.
 		[[nodiscard]] const std::filesystem::path& path() const;
 
 		/// Writes a file byte for byte, creating its folders.

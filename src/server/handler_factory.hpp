@@ -13,6 +13,7 @@ namespace qs
 	class RequestHandlerFactory final : public Poco::Net::HTTPRequestHandlerFactory
 	{
 	public:
+		/// Creates a factory whose handlers serve the episodes of the given services.
 		/// @param services What the handlers serve episodes from.
 		explicit RequestHandlerFactory(const Services& services);
 

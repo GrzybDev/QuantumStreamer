@@ -30,6 +30,7 @@ namespace qs
 		/// @return The original list, which still holds the CDN URLs.
 		static VideoList patchGameFile(const std::string& originalPath, unsigned short port);
 
+		/// Lists the episodes the video list holds.
 		[[nodiscard]] std::vector<std::string> episodeIds() const;
 
 		/// Looks up the CDN URL of an episode's manifest.

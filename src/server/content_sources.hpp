@@ -46,6 +46,7 @@ namespace qs
 	class ManifestSource final : public ContentSource
 	{
 	public:
+		/// Creates the source of one episode's client manifest.
 		/// @param services What the manifest is served from.
 		/// @param episodeId The episode whose manifest is requested.
 		ManifestSource(const Services& services, std::string episodeId);
@@ -72,6 +73,7 @@ namespace qs
 	class FragmentSource final : public ContentSource
 	{
 	public:
+		/// Creates the source of one requested fragment.
 		/// @param services What the fragment is served from.
 		/// @param request The requested fragment.
 		FragmentSource(const Services& services, FragmentRequest request);

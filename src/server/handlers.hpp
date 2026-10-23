@@ -27,6 +27,7 @@ namespace qs
 	class StatusHandler final : public LoggedRequestHandler
 	{
 	public:
+		/// Creates a handler that answers every request with the same status.
 		/// @param status The status to answer with.
 		explicit StatusHandler(Poco::Net::HTTPResponse::HTTPStatus status);
 
@@ -41,6 +42,7 @@ namespace qs
 	class ContentHandler final : public LoggedRequestHandler
 	{
 	public:
+		/// Creates a handler for one requested content source.
 		/// @param source What is requested.
 		/// @param offlineMode Whether the CDN must not be used.
 		ContentHandler(std::unique_ptr<ContentSource> source, bool offlineMode);
