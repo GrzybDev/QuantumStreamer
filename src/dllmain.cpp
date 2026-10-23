@@ -38,12 +38,11 @@ namespace
 	}
 }
 
-BOOL APIENTRY DllMain(const HMODULE module, const DWORD reason, LPVOID /*reserved*/) // NOLINT(misc-use-internal-linkage)
+BOOL APIENTRY DllMain(HMODULE /*module*/, const DWORD reason, LPVOID /*reserved*/) // NOLINT(misc-use-internal-linkage)
 {
+	// Thread notifications stay enabled, since the static CRT needs them.
 	if (reason != DLL_PROCESS_ATTACH)
 		return TRUE;
-
-	DisableThreadLibraryCalls(module);
 
 	// DllMain runs under the loader lock, so the server has to start on its own thread.
 	if (const HANDLE thread = CreateThread(nullptr, 0, runServer, nullptr, 0, nullptr))
