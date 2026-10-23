@@ -77,6 +77,7 @@ namespace qs::test
 
 		EXPECT_TRUE(VideoList::patchGameFile(kOriginalPath, 1234).episodeIds().empty());
 		EXPECT_EQ(folder_.read(kGameFile), kStoreList);
+		EXPECT_EQ(folder_.read(kOriginalFile), "not a video list");
 	}
 
 	TEST_F(VideoListTest, DiscardsACopyThatAlreadyPointsAtTheLocalServer)
