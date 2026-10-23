@@ -8,6 +8,9 @@
 
 namespace qs
 {
+	/// The address the local server listens on and the patched video list points at.
+	inline constexpr auto kLocalServerHost = "127.0.0.1";
+
 	/// Encrypts or decrypts the contents of an .rmdj file; the cipher is symmetric.
 	/// @param data The contents to transform in place.
 	void applyRmdjCipher(std::string& data);

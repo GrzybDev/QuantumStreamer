@@ -60,7 +60,7 @@ namespace qs::test
 
 		Answer request(const std::string& path, const std::string& method = Poco::Net::HTTPRequest::HTTP_GET)
 		{
-			Poco::Net::HTTPClientSession session("127.0.0.1", socket_.address().port());
+			Poco::Net::HTTPClientSession session(kLocalServerHost, socket_.address().port());
 			Poco::Net::HTTPRequest request(method, path, Poco::Net::HTTPMessage::HTTP_1_1);
 			session.sendRequest(request);
 
@@ -71,7 +71,7 @@ namespace qs::test
 		}
 
 		TempFolder folder_;
-		Poco::Net::ServerSocket socket_{Poco::Net::SocketAddress("127.0.0.1", 0)};
+		Poco::Net::ServerSocket socket_{Poco::Net::SocketAddress(kLocalServerHost, 0)};
 		std::unique_ptr<VideoList> videoList_;
 		std::unique_ptr<OfflineLibrary> library_;
 		std::unique_ptr<SubtitleOverrides> subtitles_;

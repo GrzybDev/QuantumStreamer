@@ -31,7 +31,7 @@ namespace qs
 		const Settings::Server& server = settings_.server;
 
 		// The patched video list needs the port, so the socket is bound before anything is loaded.
-		const Poco::Net::ServerSocket socket(server.port);
+		const Poco::Net::ServerSocket socket(Poco::Net::SocketAddress(kLocalServerHost, server.port));
 		const Poco::UInt16 port = socket.address().port();
 
 		const VideoList videoList = settings_.patchVideoList

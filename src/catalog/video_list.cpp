@@ -10,7 +10,6 @@ namespace qs
 	{
 		constexpr auto kGameVideoListPath = "./data/videoList.rmdj";
 		constexpr std::string_view kManifestSegment = "manifest";
-		constexpr std::string_view kLocalServerPrefix = "http://127.0.0.1:";
 
 		constexpr std::array<unsigned char, 32> kCipherKey{
 			0xba, 0x7a, 0xbb, 0x27, 0x03, 0x9b, 0x72, 0xfd, 0x13, 0xeb, 0x70, 0x38, 0x7e, 0x0f, 0xcb, 0x41,
@@ -89,8 +88,10 @@ namespace qs
 		if (original.manifestUrls_.empty())
 			return original;
 
+		const std::string localPrefix = std::format("http://{}:", kLocalServerHost);
+
 		// A copy of an already patched list has no CDN URLs left and would break the game again after a repair.
-		const auto isLocal = [](const std::string& url) { return url.starts_with(kLocalServerPrefix); };
+		const auto isLocal = [&](const std::string& url) { return url.starts_with(localPrefix); };
 		if (std::ranges::all_of(original.manifestUrls_ | std::views::values, isLocal))
 		{
 			logger().error(std::format("{} already points at the local server, so it was removed. Verify the game "
@@ -108,7 +109,7 @@ namespace qs
 
 		Poco::JSON::Object patched;
 		for (const std::string& episodeId : original.manifestUrls_ | std::views::keys)
-			patched.set(episodeId, std::format("{}{}/{}/manifest", kLocalServerPrefix, port, episodeId));
+			patched.set(episodeId, std::format("{}{}/{}/manifest", localPrefix, port, episodeId));
 
 		std::ostringstream json;
 		patched.stringify(json, 4);
