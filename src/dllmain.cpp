@@ -24,18 +24,6 @@ namespace
 
 		return EXIT_FAILURE;
 	}
-
-	std::string describeSystemError(const DWORD code)
-	{
-		std::array<char, 512> buffer{};
-		FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr, code,
-		               MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), buffer.data(), static_cast<DWORD>(buffer.size()),
-		               nullptr);
-
-		std::string message(buffer.data());
-		message.erase(message.find_last_not_of("\r\n") + 1);
-		return message;
-	}
 }
 
 BOOL APIENTRY DllMain(HMODULE /*module*/, const DWORD reason, LPVOID /*reserved*/) // NOLINT(misc-use-internal-linkage)
@@ -51,15 +39,8 @@ BOOL APIENTRY DllMain(HMODULE /*module*/, const DWORD reason, LPVOID /*reserved*
 		return TRUE;
 	}
 
-	const DWORD error = GetLastError();
-	const std::string message = std::format(
-		"Quantum Streamer was unable to initialize because the worker thread could not be created.\n\n"
-		"The game will now exit because critical components could not be initialized.\n"
-		"Please try restarting the game, and if the problem persists, open an issue at:\n"
-		"https://github.com/GrzybDev/QuantumStreamer/issues/new\n\n"
-		"Please include following information:\n"
-		"Error: {} ({})", error, describeSystemError(error));
-
-	MessageBoxA(nullptr, message.c_str(), "Catastrophic Failure", MB_OK | MB_ICONERROR);
+	// User32 must not be used under the loader lock, so the loader reports the failed start instead of a dialog.
+	OutputDebugStringA(std::format("Quantum Streamer could not create its server thread (error {})", GetLastError())
+	                   .c_str());
 	return FALSE;
 }
