@@ -139,7 +139,7 @@ namespace qs
 			body = source_->transform(std::move(body));
 		else
 		{
-			logger().error(std::format("Failed to fetch the {}! Remote server returned {} status code.",
+			logger().error(std::format("Failed to fetch the {}, the remote server answered {}",
 			                           source_->describe(), static_cast<int>(remoteResponse.getStatus())));
 			if (logger().trace())
 				logger().trace(std::format("Remote server response: {}", body));

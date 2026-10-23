@@ -57,8 +57,9 @@ namespace qs
 	SubtitleOverrides::SubtitleOverrides(const std::string& episodesPath, const std::vector<std::string>& episodeIds,
 	                                     const SubtitleOptions options) : options_(options)
 	{
-		logger().information(std::format("Closed captioning is {}", options.closedCaptioning ? "enabled" : "disabled"));
-		logger().information(std::format("Music notes are {}", options.musicNotes ? "enabled" : "disabled"));
+		logger().information(std::format("Overridden captions {} closed-caption annotations",
+		                                 options.closedCaptioning ? "keep" : "drop"));
+		logger().information(std::format("Overridden captions {} music notes", options.musicNotes ? "keep" : "drop"));
 
 		for (const std::string& episodeId : episodeIds)
 		{
@@ -91,7 +92,7 @@ namespace qs
 				episodes_[episodeId] = std::move(tracks);
 		}
 
-		logger().information(std::format("Successfully loaded caption overrides for {} episodes!", episodes_.size()));
+		logger().information(std::format("Loaded caption overrides for {} episodes", episodes_.size()));
 	}
 
 	SubtitleOverrides::Cues SubtitleOverrides::parseSrt(std::istream& stream)

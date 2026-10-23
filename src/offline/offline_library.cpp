@@ -56,7 +56,7 @@ namespace qs
 			}
 		}
 
-		logger().information(std::format("{} episodes are ready to offline playback!", episodes_.size()));
+		logger().information(std::format("Found {} stored episodes", episodes_.size()));
 	}
 
 	std::optional<OfflineLibrary::Episode> OfflineLibrary::loadEpisode(const std::string& episodeId,
@@ -146,8 +146,7 @@ namespace qs
 		const std::string path = episode->second.clientManifest.toString();
 		std::optional<std::string> manifest = readFile(path);
 		if (!manifest)
-			logger().warning(std::format("Failed to open client manifest file {}, it was there while initializing, "
-			                             "so it will be fetched from the server instead.", path));
+			logger().warning(std::format("Cannot open the client manifest {}, although it was there at startup", path));
 
 		return manifest;
 	}
@@ -172,8 +171,7 @@ namespace qs
 		std::ifstream stream(path, std::ios::binary);
 		if (!stream)
 		{
-			logger().warning(std::format("Failed to open track file {}, it was there while initializing, "
-			                             "so the fragment will be fetched from the server instead.", path));
+			logger().warning(std::format("Cannot open the track file {}, although it was there at startup", path));
 			return std::nullopt;
 		}
 
@@ -183,8 +181,8 @@ namespace qs
 		}
 		catch (const mp4::FormatError& error)
 		{
-			logger().warning(std::format("Invalid fragment at start time {} in track {} ({}), "
-			                             "it will be fetched from the server instead.", startTime, path, error.what()));
+			logger().warning(std::format("Invalid fragment at start time {} in track {} ({})", startTime, path,
+			                             error.what()));
 			return std::nullopt;
 		}
 	}

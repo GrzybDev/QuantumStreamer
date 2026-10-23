@@ -24,10 +24,9 @@ namespace qs
 			logger().error(std::format("Invalid setting {}, its default is used instead", value));
 
 		logger().notice(std::format("Quantum Streamer v{} by Marek Grzyb (@GrzybDev)", kVersion));
-		logger().notice("Homepage: https://grzyb.dev/app/QuantumStreamer");
 		logger().notice("Source code: https://github.com/GrzybDev/QuantumStreamer");
-		logger().notice("Noticed a bug? Fill a bug report here: https://github.com/GrzybDev/QuantumStreamer/issues");
-		logger().notice("Licensed under GNU Lesser General Public License v3, Contributions of any kind welcome!");
+		logger().notice("Bug reports: https://github.com/GrzybDev/QuantumStreamer/issues");
+		logger().notice("Licensed under the GNU Lesser General Public License v3");
 
 		settings_ = Settings::load(config());
 	}

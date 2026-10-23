@@ -41,7 +41,7 @@ namespace qs
 		std::optional<std::string> data = readFile(path);
 		if (!data)
 		{
-			logger().error(std::format("Cannot read the video list {}, no episodes can be loaded!", path));
+			logger().error(std::format("Cannot read the video list {}, so no episodes can be loaded", path));
 			return {};
 		}
 
@@ -56,13 +56,12 @@ namespace qs
 		}
 		catch (const Poco::Exception& error)
 		{
-			logger().error(std::format("Cannot parse the video list {} ({}), no episodes can be loaded!", path,
+			logger().error(std::format("Cannot parse the video list {} ({}), so no episodes can be loaded", path,
 			                           error.displayText()));
 			return {};
 		}
 
-		logger().information(std::format("Successfully loaded videos list! (Videos count: {})",
-		                                 list.manifestUrls_.size()));
+		logger().information(std::format("Loaded the video list with {} episodes", list.manifestUrls_.size()));
 		return list;
 	}
 
@@ -94,15 +93,16 @@ namespace qs
 		const auto isLocal = [&](const std::string& url) { return url.starts_with(localPrefix); };
 		if (std::ranges::all_of(original.manifestUrls_ | std::views::values, isLocal))
 		{
-			logger().error(std::format("{} already points at the local server, so it was removed. Verify the game "
-			                           "files in Steam to restore the original video list.", originalPath));
 			try
 			{
 				Poco::File(originalPath).remove();
+				logger().error(std::format("{} pointed at the local server, so it was removed; verifying the game "
+				                           "files in Steam restores the original video list", originalPath));
 			}
 			catch (const Poco::Exception& error)
 			{
-				logger().error(std::format("Failed to remove {} ({})", originalPath, error.displayText()));
+				logger().error(std::format("{} points at the local server and cannot be removed ({})", originalPath,
+				                           error.displayText()));
 			}
 			return {};
 		}
@@ -117,8 +117,7 @@ namespace qs
 		applyRmdjCipher(data);
 
 		if (writeFile(kGameVideoListPath, data))
-			logger().information(std::format("Video list file patched successfully! (Videos count: {})",
-			                                 patched.size()));
+			logger().information(std::format("Patched the game's video list with {} episodes", patched.size()));
 		else
 			logger().error(std::format("Failed to write the patched video list to {}", kGameVideoListPath));
 
