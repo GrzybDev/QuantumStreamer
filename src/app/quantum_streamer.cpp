@@ -6,6 +6,7 @@
 #include "catalog/video_list.hpp"
 #include "offline/offline_library.hpp"
 #include "server/handler_factory.hpp"
+#include "util/log_channels.hpp"
 
 namespace qs
 {

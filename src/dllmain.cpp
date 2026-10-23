@@ -1,7 +1,7 @@
 #include "pch.hpp"
 
-#include "app/logging.hpp"
 #include "app/quantum_streamer.hpp"
+#include "util/log_channels.hpp"
 
 namespace
 {

@@ -1,8 +1,8 @@
 #include "pch.hpp"
 #include "offline_library.hpp"
 
-#include "app/logging.hpp"
 #include "util/files.hpp"
+#include "util/log_channels.hpp"
 
 namespace qs
 {

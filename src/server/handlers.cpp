@@ -1,7 +1,7 @@
 #include "pch.hpp"
 #include "handlers.hpp"
 
-#include "app/logging.hpp"
+#include "util/log_channels.hpp"
 
 using Poco::Net::HTTPResponse;
 using Poco::Net::HTTPServerRequest;

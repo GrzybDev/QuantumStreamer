@@ -4,9 +4,6 @@
     <Filter Include="src">
       <UniqueIdentifier>{ca6a3ec0-42e8-57a1-8b69-6bf360bd16be}</UniqueIdentifier>
     </Filter>
-    <Filter Include="src\app">
-      <UniqueIdentifier>{655e7d9b-796e-5626-9383-2c72b694457f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="src\catalog">
       <UniqueIdentifier>{ede1d1ae-8819-557a-a141-f88311aeeb43}</UniqueIdentifier>
     </Filter>
@@ -27,15 +24,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\app\logging.hpp">
-      <Filter>src\app</Filter>
-    </ClInclude>
-    <ClInclude Include="src\app\quantum_streamer.hpp">
-      <Filter>src\app</Filter>
-    </ClInclude>
-    <ClInclude Include="src\app\settings.hpp">
-      <Filter>src\app</Filter>
-    </ClInclude>
     <ClInclude Include="src\catalog\video_list.hpp">
       <Filter>src\catalog</Filter>
     </ClInclude>
@@ -63,20 +51,11 @@
     <ClInclude Include="src\util\files.hpp">
       <Filter>src\util</Filter>
     </ClInclude>
-    <ClInclude Include="src\version.hpp">
-      <Filter>src</Filter>
+    <ClInclude Include="src\util\log_channels.hpp">
+      <Filter>src\util</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\app\logging.cpp">
-      <Filter>src\app</Filter>
-    </ClCompile>
-    <ClCompile Include="src\app\quantum_streamer.cpp">
-      <Filter>src\app</Filter>
-    </ClCompile>
-    <ClCompile Include="src\app\settings.cpp">
-      <Filter>src\app</Filter>
-    </ClCompile>
     <ClCompile Include="src\catalog\video_list.cpp">
       <Filter>src\catalog</Filter>
     </ClCompile>

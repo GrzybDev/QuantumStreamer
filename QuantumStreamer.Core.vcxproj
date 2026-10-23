@@ -43,9 +43,6 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="src\app\logging.hpp" />
-    <ClInclude Include="src\app\quantum_streamer.hpp" />
-    <ClInclude Include="src\app\settings.hpp" />
     <ClInclude Include="src\catalog\video_list.hpp" />
     <ClInclude Include="src\media\mp4.hpp" />
     <ClInclude Include="src\offline\offline_library.hpp" />
@@ -55,12 +52,9 @@
     <ClInclude Include="src\server\handlers.hpp" />
     <ClInclude Include="src\subtitles\subtitle_overrides.hpp" />
     <ClInclude Include="src\util\files.hpp" />
-    <ClInclude Include="src\version.hpp" />
+    <ClInclude Include="src\util\log_channels.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\app\logging.cpp" />
-    <ClCompile Include="src\app\quantum_streamer.cpp" />
-    <ClCompile Include="src\app\settings.cpp" />
     <ClCompile Include="src\catalog\video_list.cpp" />
     <ClCompile Include="src\media\mp4.cpp" />
     <ClCompile Include="src\offline\offline_library.cpp" />

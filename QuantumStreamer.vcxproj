@@ -56,6 +56,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\app\logging.hpp" />
+    <ClInclude Include="src\app\quantum_streamer.hpp" />
+    <ClInclude Include="src\app\settings.hpp" />
+    <ClInclude Include="src\version.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\app\logging.cpp" />
+    <ClCompile Include="src\app\quantum_streamer.cpp" />
+    <ClCompile Include="src\app\settings.cpp" />
     <ClCompile Include="src\dllmain.cpp" />
     <ClCompile Include="src\pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>

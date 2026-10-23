@@ -1,11 +1,11 @@
 #include "pch.hpp"
 #include "content_sources.hpp"
 
-#include "app/logging.hpp"
 #include "catalog/video_list.hpp"
 #include "media/mp4.hpp"
 #include "offline/offline_library.hpp"
 #include "subtitles/subtitle_overrides.hpp"
+#include "util/log_channels.hpp"
 
 namespace qs
 {

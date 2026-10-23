@@ -1,7 +1,7 @@
 #include "pch.hpp"
 #include "settings.hpp"
 
-#include "logging.hpp"
+#include "util/log_channels.hpp"
 
 namespace qs
 {
