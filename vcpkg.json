@@ -1,4 +1,5 @@
 {
+  "license": "LGPL-3.0-or-later",
   "dependencies": [
     {
       "name": "poco",
